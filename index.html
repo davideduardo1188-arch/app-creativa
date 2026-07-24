@@ -1,802 +1,407 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Mundo Creativo - App para Niñas</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Mi Mundo Mágico de Aventuras</title>
+  
+  <!-- Tailwind CSS para Estilos -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <style>
+    /* Prevenir selección de texto y scroll indeseado en móviles */
+    body {
+      touch-action: manipulation;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      overscroll-behavior-y: contain;
+    }
     
-    <!-- PWA Meta Tags -->
-    <meta name="theme-color" content="#0284c7">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Mundo Creativo">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🦄</text></svg>">
-    
-    <!-- Fuentes y Iconos -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    .canvas-container {
+      touch-action: none;
+    }
 
-    <style>
-        :root {
-            --primary: #0284c7;
-            --pink: #ec4899;
-            --purple: #8b5cf6;
-            --green: #10b981;
-            --yellow: #f59e0b;
-            --bg: #f0f9ff;
-            --text: #0f172a;
-        }
+    /* Animaciones suaves */
+    .bounce-active:active {
+      transform: scale(0.92);
+    }
 
-        * {
-            box-sizing: border-box;
-            user-select: none;
-            -webkit-user-select: none;
-            margin: 0;
-            padding: 0;
-            touch-action: manipulation;
-        }
-
-        body {
-            font-family: 'Fredoka', sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        /* BARRA SUPERIOR */
-        header {
-            background: white;
-            padding: 12px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            z-index: 10;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 22px;
-            color: var(--primary);
-        }
-
-        .logo i { font-size: 28px; color: var(--pink); }
-
-        .top-nav {
-            display: flex;
-            gap: 12px;
-        }
-
-        .star-badge {
-            background: #fffbe2;
-            border: 2px solid var(--yellow);
-            padding: 6px 14px;
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: var(--yellow);
-            font-size: 18px;
-        }
-
-        /* NAVEGACIÓN INFERIOR DE MÓDULOS */
-        nav.nav-bar {
-            background: white;
-            display: flex;
-            justify-content: space-around;
-            padding: 10px;
-            box-shadow: 0 -4px 15px rgba(0,0,0,0.05);
-            z-index: 10;
-        }
-
-        .nav-btn {
-            background: none;
-            border: none;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            font-family: 'Fredoka', sans-serif;
-            font-size: 14px;
-            color: #94a3b8;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            flex: 1;
-        }
-
-        .nav-btn i {
-            font-size: 24px;
-            padding: 8px 16px;
-            border-radius: 16px;
-            transition: all 0.2s ease;
-        }
-
-        .nav-btn.active {
-            color: var(--primary);
-        }
-
-        .nav-btn.active i {
-            background: #e0f2fe;
-            color: var(--primary);
-            transform: scale(1.1);
-        }
-
-        /* ÁREA PRINCIPAL MÓDULOS */
-        main {
-            flex: 1;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .view-module {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            display: none;
-            flex-direction: column;
-            padding: 15px;
-            gap: 15px;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .view-module.active {
-            display: flex;
-            opacity: 1;
-        }
-
-        /* MÓDULO 1: DIBUJO Y CANVA */
-        .canvas-container {
-            flex: 1;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.05);
-            position: relative;
-            overflow: hidden;
-        }
-
-        canvas {
-            width: 100%;
-            height: 100%;
-            touch-action: none;
-            cursor: crosshair;
-        }
-
-        .toolbar {
-            background: white;
-            padding: 10px;
-            border-radius: 20px;
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            overflow-x: auto;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        }
-
-        .color-dot {
-            width: 36px; height: 36px;
-            border-radius: 50%;
-            border: 3px solid white;
-            box-shadow: 0 0 0 2px #cbd5e1;
-            cursor: pointer;
-            flex-shrink: 0;
-        }
-
-        .color-dot.selected {
-            box-shadow: 0 0 0 4px var(--primary);
-            transform: scale(1.1);
-        }
-
-        .tool-btn {
-            background: #f1f5f9;
-            border: none;
-            padding: 10px 14px;
-            border-radius: 12px;
-            font-family: 'Fredoka', sans-serif;
-            font-size: 16px;
-            color: var(--text);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            cursor: pointer;
-            flex-shrink: 0;
-        }
-
-        .tool-btn.active {
-            background: var(--pink);
-            color: white;
-        }
-
-        /* MÓDULO 2: RETOS DE MOVIMIENTO */
-        .challenge-card {
-            background: white;
-            border-radius: 24px;
-            padding: 25px;
-            text-align: center;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-            gap: 20px;
-        }
-
-        .challenge-icon {
-            font-size: 80px;
-            animation: bounce 2s infinite;
-        }
-
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-15px); }
-        }
-
-        .challenge-title {
-            font-size: 28px;
-            color: var(--pink);
-        }
-
-        .challenge-desc {
-            font-family: 'Quicksand', sans-serif;
-            font-size: 20px;
-            color: #475569;
-            max-width: 400px;
-        }
-
-        .action-btn {
-            background: linear-gradient(135deg, var(--green), #059669);
-            color: white;
-            border: none;
-            font-size: 24px;
-            font-family: 'Fredoka', sans-serif;
-            padding: 16px 36px;
-            border-radius: 50px;
-            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
-            cursor: pointer;
-            transition: transform 0.1s ease;
-        }
-
-        .action-btn:active {
-            transform: scale(0.95);
-        }
-
-        /* */
-        .speaker-btn {
-            background: #fef08a;
-            border: 2px solid #f59e0b;
-            color: #b45309;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            display: inline-flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 22px;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3);
-            transition: transform 0.1s ease;
-        }
-
-        .speaker-btn:active {
-            transform: scale(0.9);
-        }
-
-        /* MÓDULO 3: ROBOT STEM */
-        .robot-stage {
-            flex: 1;
-            background: #e0f2fe;
-            border-radius: 20px;
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-        }
-
-        .robot {
-            font-size: 90px;
-            position: absolute;
-            transition: all 0.5s ease;
-        }
-
-        .sequence-bar {
-            background: white;
-            min-height: 70px;
-            border-radius: 16px;
-            padding: 10px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            overflow-x: auto;
-            border: 2px dashed #bae6fd;
-        }
-
-        .block-tag {
-            background: var(--purple);
-            color: white;
-            padding: 8px 14px;
-            border-radius: 12px;
-            font-size: 16px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            flex-shrink: 0;
-            animation: popIn 0.2s ease;
-        }
-
-        @keyframes popIn {
-            0% { transform: scale(0); }
-            100% { transform: scale(1); }
-        }
-
-        .block-selector {
-            display: flex;
-            gap: 8px;
-            overflow-x: auto;
-        }
-
-        /* CELEBRACIÓN / CONFETTI */
-        .overlay-celebration {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255,255,255,0.9);
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .overlay-celebration h2 {
-            font-size: 48px;
-            color: var(--pink);
-            margin-bottom: 10px;
-        }
-
-        /* MODAL CONFIGURACIÓN PADRES */
-        .modal {
-            position: fixed;
-            top:0; left:0; width:100%; height:100%;
-            background: rgba(0,0,0,0.5);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .modal-card {
-            background: white;
-            padding: 25px;
-            border-radius: 20px;
-            width: 90%;
-            max-width: 450px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        input[type="text"] {
-            padding: 12px;
-            border: 2px solid #cbd5e1;
-            border-radius: 10px;
-            font-family: 'Quicksand', sans-serif;
-            font-size: 16px;
-        }
-    </style>
+    /* Pestaña activa */
+    .tab-active {
+      border-top: 4px solid #ec4899;
+      background-color: #fdf2f8;
+      color: #be185d;
+    }
+  </style>
 </head>
-<body>
+<body class="bg-slate-100 font-sans h-screen w-screen flex flex-col overflow-hidden">
 
-    <!-- BARRA SUPERIOR -->
-    <header>
-        <div class="logo">
-            <i class="fa-solid fa-wand-magic-sparkles"></i>
-            <span>Mundo Creativo</span>
-        </div>
-        <div class="top-nav">
-            <div class="star-badge">
-                <i class="fa-solid fa-star"></i>
-                <span id="star-count">12</span>
-            </div>
-            <button class="tool-btn" onclick="openConfig()" style="padding: 8px 12px;">
-                <i class="fa-solid fa-gear"></i>
-            </button>
-        </div>
-    </header>
-
-    <!-- CONTENIDO PRINCIPAL -->
-    <main>
-        <!-- MÓDULO 1: ARTE Y CANVAS -->
-        <section id="module-art" class="view-module active">
-            <div class="canvas-container" id="canvas-wrapper">
-                <canvas id="paintCanvas"></canvas>
-            </div>
-            <div class="toolbar">
-                <div class="color-dot selected" style="background: #ec4899;" onclick="selectColor('#ec4899', this)"></div>
-                <div class="color-dot" style="background: #0284c7;" onclick="selectColor('#0284c7', this)"></div>
-                <div class="color-dot" style="background: #10b981;" onclick="selectColor('#10b981', this)"></div>
-                <div class="color-dot" style="background: #f59e0b;" onclick="selectColor('#f59e0b', this)"></div>
-                <div class="color-dot" style="background: #8b5cf6;" onclick="selectColor('#8b5cf6', this)"></div>
-                <div class="color-dot" style="background: #0f172a;" onclick="selectColor('#0f172a', this)"></div>
-                
-                <button class="tool-btn active" id="btn-brush" onclick="setTool('brush')">
-                    <i class="fa-solid fa-paint-brush"></i> Pincel
-                </button>
-                <button class="tool-btn" id="btn-stamp" onclick="setTool('stamp')">
-                    <i class="fa-solid fa-icons"></i> Sello ⭐
-                </button>
-                <button class="tool-btn" onclick="clearCanvas()">
-                    <i class="fa-solid fa-eraser"></i> Borrar
-                </button>
-                <button class="tool-btn" onclick="saveArt()" style="background: #dcfce7; color: #15803d;">
-                    <i class="fa-solid fa-floppy-disk"></i> Guardar
-                </button>
-            </div>
-        </section>
-
-        <!-- MÓDULO 2: RETOS DE MOVIMIENTO -->
-        <section id="module-move" class="view-module">
-            <div class="challenge-card">
-                <div style="display: flex; gap: 15px; align-items: center;">
-                    <div class="challenge-icon" id="ch-icon">💃</div>
-                    <button class="speaker-btn" onclick="speakCurrentChallenge()" title="Escuchar instrucción">
-                        <i class="fa-solid fa-volume-high"></i>
-                    </button>
-                </div>
-                <h2 class="challenge-title" id="ch-title">¡Hora de Bailar!</h2>
-                <p class="challenge-desc" id="ch-desc">Baila durante 10 segundos como un dinosaurio alegre.</p>
-                <button class="action-btn" onclick="completeChallenge()">
-                    <i class="fa-solid fa-check"></i> ¡Lo Hice!
-                </button>
-            </div>
-        </section>
-
-        <!-- MÓDULO 3: LABORATORIO ROBOT STEM -->
-        <section id="module-robot" class="view-module">
-            <div class="robot-stage">
-                <div class="robot" id="robot-avatar">🤖</div>
-            </div>
-            
-            <p style="font-size: 14px; color: #64748b;">Secuencia de Comandos:</p>
-            <div class="sequence-bar" id="sequence-bar"></div>
-
-            <div class="block-selector">
-                <button class="tool-btn" onclick="addCommand('Avanzar', '➡️', 'move-right')">➡️ Avanzar</button>
-                <button class="tool-btn" onclick="addCommand('Saltar', '⬆️', 'jump')">⬆️ Saltar</button>
-                <button class="tool-btn" onclick="addCommand('Girar', '🔄', 'spin')">🔄 Girar</button>
-                <button class="tool-btn" onclick="addCommand('Cantar', '🎵', 'sing')">🎵 Cantar</button>
-                <button class="tool-btn" style="background:#fee2e2; color:#991b1b;" onclick="clearSequence()">❌ Borrar</button>
-            </div>
-
-            <button class="action-btn" onclick="runSequence()" style="width: 100%; margin-top: 5px;">
-                <i class="fa-solid fa-play"></i> ¡Iniciar Robot!
-            </button>
-        </section>
-    </main>
-
-    <!-- NAVEGACIÓN INFERIOR -->
-    <nav class="nav-bar">
-        <button class="nav-btn active" onclick="switchModule('art', this)">
-            <i class="fa-solid fa-palette"></i>
-            <span>Arte</span>
-        </button>
-        <button class="nav-btn" onclick="switchModule('move', this)">
-            <i class="fa-solid fa-person-running"></i>
-            <span>Retos</span>
-        </button>
-        <button class="nav-btn" onclick="switchModule('robot', this)">
-            <i class="fa-solid fa-robot"></i>
-            <span>Robot</span>
-        </button>
-    </nav>
-
-    <!-- CELEBRACIÓN -->
-    <div class="overlay-celebration" id="celebration">
-        <div style="font-size: 100px;">🎉</div>
-        <h2>¡Excelente Trabajo!</h2>
-        <p style="font-size: 22px; color: #475569;">+1 Estrella Ganada ⭐</p>
-        <button class="action-btn" onclick="closeCelebration()" style="margin-top: 20px;">
-            ¡Continuar!
-        </button>
+  <!-- ENCABEZADO SUPERIOR / RECOMPENSAS -->
+  <header class="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-white p-3 flex justify-between items-center shadow-md shrink-0">
+    <div class="flex items-center space-x-2">
+      <button onclick="speakText('¡Hola campeona! Elige una actividad abajo')" class="bg-white/20 p-2 rounded-full active:scale-95 transition">
+        <span class="text-2xl">👑</span>
+      </button>
+      <div>
+        <h1 class="font-black text-lg leading-none">Aventuras Mágicas</h1>
+        <p class="text-xs text-pink-100 font-medium">¡A jugar y crear!</p>
+      </div>
     </div>
 
-    <!-- MODAL CONFIGURACIÓN PADRES -->
-    <div class="modal" id="config-modal">
-        <div class="modal-card">
-            <h3><i class="fa-solid fa-gear"></i> Configuración de Padres</h3>
-            <p style="font-size: 14px; color: #64748b;">Enlaza la app a tu hoja de Google Sheets ingresando la URL de Google Apps Script:</p>
-            <input type="text" id="webhook-url" placeholder="https://script.google.com/macros/s/.../exec">
-            <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                <button class="tool-btn" onclick="closeConfig()">Cancelar</button>
-                <button class="tool-btn" style="background: var(--primary); color: white;" onclick="saveConfig()">Guardar</button>
-            </div>
-        </div>
+    <!-- Contador de Estrellas -->
+    <div class="bg-yellow-400 text-yellow-950 px-3 py-1 rounded-full font-black text-lg flex items-center shadow-inner space-x-1 border-2 border-yellow-200">
+      <span>⭐</span>
+      <span id="star-count">0</span>
     </div>
+  </header>
 
-    <!-- SCRIPT PRINCIPAL -->
-    <script>
-        // SINTETIZADOR DE VOZ (Text To Speech en Español)
-        function speak(text) {
-            if (!('speechSynthesis' in window)) return;
-            window.speechSynthesis.cancel(); // Cancelar locuciones anteriores
-            const msg = new SpeechSynthesisUtterance(text);
-            msg.lang = 'es-MX'; // Voz en español
-            msg.rate = 0.95;    // Velocidad pausada para niños
-            msg.pitch = 1.1;   // Tono amigable
-            window.speechSynthesis.speak(msg);
-        }
+  <!-- CONTENEDOR PRINCIPAL DE PANTALLAS -->
+  <main class="flex-1 relative overflow-hidden bg-slate-50">
+    
+    <!-- ==================== 1. MÓDULO LIENZO DE DIBUJO ==================== -->
+    <section id="tab-art" class="tab-content absolute inset-0 flex flex-col p-2 space-y-2">
+      
+      <!-- Barra de herramientas superior -->
+      <div class="bg-white p-2 rounded-2xl shadow flex items-center justify-between gap-1 overflow-x-auto shrink-0 border border-pink-100">
+        <!-- Colores principales -->
+        <div class="flex items-center space-x-1">
+          <button onclick="setColor('#ef4444')" class="w-9 h-9 rounded-full bg-red-500 border-2 border-white shadow active:scale-90"></button>
+          <button onclick="setColor('#3b82f6')" class="w-9 h-9 rounded-full bg-blue-500 border-2 border-white shadow active:scale-90"></button>
+          <button onclick="setColor('#22c55e')" class="w-9 h-9 rounded-full bg-green-500 border-2 border-white shadow active:scale-90"></button>
+          <button onclick="setColor('#eab308')" class="w-9 h-9 rounded-full bg-yellow-500 border-2 border-white shadow active:scale-90"></button>
+          <button onclick="setColor('#ec4899')" class="w-9 h-9 rounded-full bg-pink-500 border-2 border-white shadow active:scale-90"></button>
+          <button onclick="setColor('#a855f7')" class="w-9 h-9 rounded-full bg-purple-500 border-2 border-white shadow active:scale-90"></button>
+        </div>
 
-        // SINTETIZADOR DE SONIDOS (Web Audio API - Sin archivos externos)
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        <!-- Acciones -->
+        <div class="flex items-center space-x-1">
+          <button onclick="setStamp('⭐')" class="p-2 bg-yellow-100 text-yellow-700 rounded-xl text-xl font-bold shadow-sm active:scale-90">⭐</button>
+          <button onclick="setStamp('🦄')" class="p-2 bg-purple-100 text-purple-700 rounded-xl text-xl font-bold shadow-sm active:scale-90">🦄</button>
+          <button onclick="clearCanvas()" class="p-2 bg-red-100 text-red-600 rounded-xl font-bold text-xs flex items-center space-x-1 active:scale-90">
+            <i data-lucide="trash-2" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Área de Dibujo Canvas -->
+      <div class="flex-1 bg-white rounded-3xl shadow-inner border-4 border-pink-200 relative overflow-hidden canvas-container">
+        <canvas id="paintCanvas" class="w-full h-full block cursor-crosshair"></canvas>
+      </div>
+    </section>
+
+    <!-- ==================== 2. MÓDULO RETOS DE MOVIMIENTO ==================== -->
+    <section id="tab-motion" class="tab-content absolute inset-0 hidden flex-col p-4 justify-between items-center text-center">
+      
+      <div class="w-full bg-gradient-to-br from-amber-400 to-orange-500 rounded-3xl p-6 text-white shadow-lg border-4 border-orange-200 flex flex-col items-center justify-center space-y-4">
         
-        function playTone(freq, type = 'sine', duration = 0.15) {
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = type;
-            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.start();
-            osc.stop(audioCtx.currentTime + duration);
+        <div class="bg-white/20 p-4 rounded-full text-6xl animate-bounce" id="challenge-icon">
+          🤸‍♀️
+        </div>
+
+        <h2 class="text-2xl font-black" id="challenge-title">¡Misión de Gimnasta!</h2>
+        <p class="text-lg font-bold text-orange-100" id="challenge-desc">Haz 5 saltos de rana en tu lugar</p>
+
+        <!-- Botón Gigante de Lectura por Voz -->
+        <button onclick="readCurrentChallenge()" class="bg-white text-orange-600 px-6 py-3 rounded-full font-black text-lg shadow-md flex items-center space-x-2 active:scale-95">
+          <span class="text-2xl">🔊</span>
+          <span>Escuchar Reto</span>
+        </button>
+      </div>
+
+      <!-- Botón de Cumplido / Siguiente -->
+      <button onclick="completeChallenge()" class="w-full max-w-xs bg-emerald-500 text-white font-black text-xl py-5 rounded-2xl shadow-lg border-b-4 border-emerald-700 active:scale-95 flex items-center justify-center space-x-2">
+        <span>¡LO HICE!</span>
+        <span class="text-2xl">🎉</span>
+      </button>
+
+    </section>
+
+    <!-- ==================== 3. MÓDULO ROBOT LAB ==================== -->
+    <section id="tab-robot" class="tab-content absolute inset-0 hidden flex-col p-3 space-y-3">
+      
+      <!-- Tablero del Robot -->
+      <div class="bg-slate-800 rounded-3xl p-4 text-white flex-1 flex flex-col justify-between items-center relative overflow-hidden border-4 border-indigo-300">
+        
+        <!-- Estado del Robot -->
+        <div class="text-center">
+          <p class="text-xs text-indigo-300 font-bold uppercase tracking-wider">Misión del Robot</p>
+          <p id="robot-status-text" class="text-sm font-bold text-yellow-400">Programa los pasos del robot</p>
+        </div>
+
+        <!-- Avatar del Robot -->
+        <div id="robot-avatar" class="text-7xl transition-all duration-300 transform">
+          🤖
+        </div>
+
+        <!-- Secuencia de Bloques Programados -->
+        <div class="w-full bg-slate-900/60 p-2 rounded-xl flex items-center justify-center space-x-2 min-h-[50px] border border-slate-700" id="command-sequence">
+          <span class="text-slate-500 text-xs italic">Toca flechas abajo...</span>
+        </div>
+      </div>
+
+      <!-- Botones de Comandos Físicos -->
+      <div class="bg-white p-3 rounded-3xl shadow-md border border-indigo-100 space-y-2">
+        <p class="text-xs font-black text-slate-400 uppercase text-center">Instrucciones</p>
+
+        <div class="grid grid-cols-3 gap-2">
+          <button onclick="addRobotCommand('⬆️', 'Avanzar')" class="bg-indigo-500 text-white p-4 rounded-2xl font-black text-2xl shadow active:scale-90 flex justify-center items-center">
+            ⬆️
+          </button>
+          <button onclick="addRobotCommand('🌀', 'Girar')" class="bg-purple-500 text-white p-4 rounded-2xl font-black text-2xl shadow active:scale-90 flex justify-center items-center">
+            🌀
+          </button>
+          <button onclick="addRobotCommand('🤸', 'Saltar')" class="bg-pink-500 text-white p-4 rounded-2xl font-black text-2xl shadow active:scale-90 flex justify-center items-center">
+            🤸
+          </button>
+        </div>
+
+        <!-- Botón Ejecutar -->
+        <div class="flex space-x-2 pt-1">
+          <button onclick="clearRobotCommands()" class="bg-slate-200 text-slate-700 p-3 rounded-xl font-bold text-xs active:scale-90">
+            Borrar
+          </button>
+          <button onclick="runRobotSequence()" class="flex-1 bg-emerald-500 text-white p-3 rounded-xl font-black text-sm shadow active:scale-95 text-center flex items-center justify-center space-x-1">
+            <span>¡INICIAR ROBOT!</span>
+            <span>🚀</span>
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- NAVEGACIÓN INFERIOR (TAB BAR FIJA) -->
+  <nav class="bg-white border-t border-slate-200 grid grid-cols-3 shrink-0 shadow-lg">
+    <button onclick="switchTab('tab-art')" id="btn-tab-art" class="py-3 flex flex-col items-center justify-center text-slate-500 tab-active">
+      <i data-lucide="palette" class="w-6 h-6 mb-1"></i>
+      <span class="text-xs font-black">Arte</span>
+    </button>
+
+    <button onclick="switchTab('tab-motion')" id="btn-tab-motion" class="py-3 flex flex-col items-center justify-center text-slate-500">
+      <i data-lucide="activity" class="w-6 h-6 mb-1"></i>
+      <span class="text-xs font-black">Moverse</span>
+    </button>
+
+    <button onclick="switchTab('tab-robot')" id="btn-tab-robot" class="py-3 flex flex-col items-center justify-center text-slate-500">
+      <i data-lucide="bot" class="w-6 h-6 mb-1"></i>
+      <span class="text-xs font-black">Robot</span>
+    </button>
+  </nav>
+
+  <!-- LÓGICA JAVASCRIPT -->
+  <script>
+    // Inicializar Íconos Lucide
+    lucide.createIcons();
+
+    // Estado global de la App
+    let stars = 0;
+    let currentColor = '#ec4899';
+    let currentStamp = null;
+    let isDrawing = false;
+
+    // --- SÍNTESIS DE VOZ (LECTORA) ---
+    function speakText(text) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel(); // Cancelar anteriores
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'es-ES';
+        utterance.rate = 0.9; // Hablar un poco más despacio
+        utterance.pitch = 1.1; // Tono más amigable
+        window.speechSynthesis.speak(utterance);
+      }
+    }
+
+    // --- NAVEGACIÓN ENTRE PESTAÑAS ---
+    function switchTab(tabId) {
+      // Ocultar todas las secciones
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('nav button').forEach(el => el.classList.remove('tab-active'));
+
+      // Mostrar la seleccionada
+      document.getElementById(tabId).classList.remove('hidden');
+      document.getElementById('btn-' + tabId).classList.add('tab-active');
+
+      // Acciones específicas por pestaña
+      if (tabId === 'tab-art') {
+        speakText("¡Módulo de Arte! Dibuja lo que quieras.");
+        resizeCanvas();
+      } else if (tabId === 'tab-motion') {
+        speakText("¡Retos de movimiento!");
+        readCurrentChallenge();
+      } else if (tabId === 'tab-robot') {
+        speakText("¡Laboratorio del Robot!");
+      }
+    }
+
+    // --- LÓGICA DEL CANVA DE DIBUJO ---
+    const canvas = document.getElementById('paintCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+      const rect = canvas.parentElement.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.lineWidth = 8;
+    }
+
+    function setColor(color) {
+      currentColor = color;
+      currentStamp = null;
+      speakText("Color cambiado");
+    }
+
+    function setStamp(stamp) {
+      currentStamp = stamp;
+      speakText("Sello mágico seleccionado");
+    }
+
+    function clearCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      speakText("Lienzo limpio");
+    }
+
+    function startDrawing(e) {
+      isDrawing = true;
+      const pos = getPos(e);
+      
+      if (currentStamp) {
+        ctx.font = '40px serif';
+        ctx.fillText(currentStamp, pos.x - 20, pos.y + 15);
+        isDrawing = false;
+        return;
+      }
+
+      ctx.beginPath();
+      ctx.moveTo(pos.x, pos.y);
+      ctx.strokeStyle = currentColor;
+    }
+
+    function draw(e) {
+      if (!isDrawing || currentStamp) return;
+      const pos = getPos(e);
+      ctx.lineTo(pos.x, pos.y);
+      ctx.stroke();
+    }
+
+    function stopDrawing() {
+      isDrawing = false;
+    }
+
+    function getPos(e) {
+      const rect = canvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      return {
+        x: clientX - rect.left,
+        y: clientY - rect.top
+      };
+    }
+
+    // Eventos Canvas (Touch + Mouse)
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+
+    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDrawing(e); });
+    canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e); });
+    canvas.addEventListener('touchend', stopDrawing);
+
+
+    // --- LÓGICA DE RETOS DE MOVIMIENTO ---
+    const challenges = [
+      { icon: '🤸‍♀️', title: '¡Misión de Gimnasta!', desc: 'Haz 5 saltos gigantes de rana en tu lugar' },
+      { icon: '⚽', title: '¡Pase de Fútbol!', desc: 'Patea 3 pelotas imaginarias muy fuerte' },
+      { icon: '💃', title: '¡Pausa de Baile!', desc: 'Baila como una estrella durante 10 segundos' },
+      { icon: '🦒', title: '¡Reto de Equilibrio!', desc: 'Párate en un solo pie como un flamenco' },
+      { icon: '⭐', title: '¡Estiramiento Mágico!', desc: 'Toca la punta de tus pies sin doblar las rodillas' }
+    ];
+
+    let currentChallengeIndex = 0;
+
+    function readCurrentChallenge() {
+      const ch = challenges[currentChallengeIndex];
+      speakText(`${ch.title}. ${ch.desc}`);
+    }
+
+    function completeChallenge() {
+      stars += 1;
+      document.getElementById('star-count').innerText = stars;
+      speakText("¡Excelente trabajo! Ganaste una estrella.");
+
+      // Cambiar al siguiente reto
+      currentChallengeIndex = (currentChallengeIndex + 1) % challenges.length;
+      const ch = challenges[currentChallengeIndex];
+
+      document.getElementById('challenge-icon').innerText = ch.icon;
+      document.getElementById('challenge-title').innerText = ch.title;
+      document.getElementById('challenge-desc').innerText = ch.desc;
+    }
+
+    // --- LÓGICA DEL ROBOT ---
+    let robotCommands = [];
+
+    function addRobotCommand(symbol, name) {
+      if (robotCommands.length >= 5) return;
+      robotCommands.push(symbol);
+      updateRobotUI();
+      speakText(name);
+    }
+
+    function clearRobotCommands() {
+      robotCommands = [];
+      updateRobotUI();
+      speakText("Secuencia borrada");
+    }
+
+    function updateRobotUI() {
+      const container = document.getElementById('command-sequence');
+      if (robotCommands.length === 0) {
+        container.innerHTML = '<span class="text-slate-500 text-xs italic">Toca flechas abajo...</span>';
+      } else {
+        container.innerHTML = robotCommands.map(cmd => `<span class="bg-indigo-600 text-white font-bold p-2 rounded-lg text-lg">${cmd}</span>`).join('');
+      }
+    }
+
+    function runRobotSequence() {
+      if (robotCommands.length === 0) {
+        speakText("Primero pon instrucciones");
+        return;
+      }
+
+      speakText("¡Robot iniciando animación!");
+      const avatar = document.getElementById('robot-avatar');
+      
+      let step = 0;
+      const interval = setInterval(() => {
+        if (step >= robotCommands.length) {
+          clearInterval(interval);
+          avatar.className = "text-7xl transition-all duration-300 transform";
+          stars += 1;
+          document.getElementById('star-count').innerText = stars;
+          speakText("¡Misión cumplida! El robot llegó a la meta.");
+          return;
         }
 
-        function playPop() { playTone(600, 'sine', 0.1); }
-        function playChime() { 
-            playTone(523.25, 'triangle', 0.15);
-            setTimeout(() => playTone(659.25, 'triangle', 0.2), 100);
-            setTimeout(() => playTone(783.99, 'triangle', 0.3), 200);
-        }
+        const cmd = robotCommands[step];
+        if (cmd === '⬆️') avatar.className = "text-7xl transition-all duration-300 transform -translate-y-6";
+        if (cmd === '🌀') avatar.className = "text-7xl transition-all duration-300 transform rotate-180";
+        if (cmd === '🤸') avatar.className = "text-7xl transition-all duration-300 transform scale-125";
 
-        // SISTEMA DE ESTRELLAS
-        let stars = parseInt(localStorage.getItem('stars') || '12');
-        document.getElementById('star-count').innerText = stars;
+        step++;
+      }, 700);
+    }
 
-        function addStar() {
-            stars++;
-            localStorage.setItem('stars', stars);
-            document.getElementById('star-count').innerText = stars;
-            playChime();
-            speak('¡Ganaste una estrella! ¡Excelente!');
-            showCelebration();
-        }
-
-        function showCelebration() {
-            document.getElementById('celebration').style.display = 'flex';
-        }
-
-        function closeCelebration() {
-            document.getElementById('celebration').style.display = 'none';
-        }
-
-        // CAMBIO DE MÓDULOS
-        function switchModule(moduleName, btn) {
-            playPop();
-            document.querySelectorAll('.view-module').forEach(m => m.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            
-            document.getElementById(`module-${moduleName}`).classList.add('active');
-            btn.classList.add('active');
-
-            if(moduleName === 'art') {
-                resizeCanvas();
-                speak('¡Módulo de arte! Dibuja lo que quieras.');
-            } else if (moduleName === 'move') {
-                speakCurrentChallenge();
-            } else if (moduleName === 'robot') {
-                speak('¡Programemos al robot! Toca las flechas.');
-            }
-        }
-
-        // CANVAS Y DIBUJO
-        const canvas = document.getElementById('paintCanvas');
-        const ctx = canvas.getContext('2d');
-        let drawing = false;
-        let currentColor = '#ec4899';
-        let currentTool = 'brush';
-
-        function resizeCanvas() {
-            const wrapper = document.getElementById('canvas-wrapper');
-            canvas.width = wrapper.clientWidth;
-            canvas.height = wrapper.clientHeight;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-        }
-
-        window.addEventListener('resize', resizeCanvas);
-        setTimeout(resizeCanvas, 100);
-
-        function selectColor(color, el) {
-            currentColor = color;
-            document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('selected'));
-            el.classList.add('selected');
-            playPop();
-        }
-
-        function setTool(tool) {
-            currentTool = tool;
-            document.getElementById('btn-brush').classList.toggle('active', tool === 'brush');
-            document.getElementById('btn-stamp').classList.toggle('active', tool === 'stamp');
-            playPop();
-            speak(tool === 'brush' ? 'Pincel' : 'Sello de estrellas');
-        }
-
-        function startDraw(e) {
-            drawing = true;
-            const pos = getPos(e);
-            if (currentTool === 'stamp') {
-                ctx.font = '40px sans-serif';
-                ctx.fillText('⭐', pos.x - 20, pos.y + 15);
-                playPop();
-                drawing = false;
-            } else {
-                ctx.beginPath();
-                ctx.moveTo(pos.x, pos.y);
-            }
-        }
-
-        function draw(e) {
-            if (!drawing || currentTool !== 'brush') return;
-            const pos = getPos(e);
-            ctx.strokeStyle = currentColor;
-            ctx.lineWidth = 10;
-            ctx.lineTo(pos.x, pos.y);
-            ctx.stroke();
-        }
-
-        function stopDraw() { drawing = false; }
-
-        function getPos(e) {
-            const rect = canvas.getBoundingClientRect();
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-            return { x: clientX - rect.left, y: clientY - rect.top };
-        }
-
-        canvas.addEventListener('mousedown', startDraw);
-        canvas.addEventListener('mousemove', draw);
-        canvas.addEventListener('mouseup', stopDraw);
-
-        canvas.addEventListener('touchstart', startDraw);
-        canvas.addEventListener('touchmove', draw);
-        canvas.addEventListener('touchend', stopDraw);
-
-        function clearCanvas() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            playPop();
-            speak('Lienzo limpio');
-        }
-
-        function saveArt() {
-            addStar();
-            sendToGoogleSheet('DIBUJO', 'Dibujo guardado con éxito');
-        }
-
-        // MÓDULO 2: RETOS DE MOVIMIENTO
-        const challenges = [
-            { icon: '💃', title: '¡Hora de Bailar!', desc: 'Pón tu canción favorita y baila durante 10 segundos como un dinosaurio alegre.' },
-            { icon: '🐸', title: 'Saltos de Rana', desc: 'Haz 5 saltos gigantes de rana tocando el piso y estirando los brazos.' },
-            { icon: '🦸‍♀️', title: 'Pose de Superhéroe', desc: 'Sostén una pose de superhéroe fuerte sin moverte durante 5 segundos.' },
-            { icon: '🎨', title: 'Búsqueda del Tesoro', desc: 'Corre a buscar un objeto de color ROSA y muéstraselo a alguien cerca.' }
-        ];
-
-        let currentChallengeIdx = 0;
-
-        function speakCurrentChallenge() {
-            const ch = challenges[currentChallengeIdx];
-            speak(`${ch.title}. ${ch.desc}`);
-        }
-
-        function completeChallenge() {
-            addStar();
-            sendToGoogleSheet('RETO_COMPLETADO', challenges[currentChallengeIdx].title);
-            
-            currentChallengeIdx = (currentChallengeIdx + 1) % challenges.length;
-            const ch = challenges[currentChallengeIdx];
-            
-            document.getElementById('ch-icon').innerText = ch.icon;
-            document.getElementById('ch-title').innerText = ch.title;
-            document.getElementById('ch-desc').innerText = ch.desc;
-
-            setTimeout(speakCurrentChallenge, 1000);
-        }
-
-        // MÓDULO 3: ROBOT STEM
-        let sequence = [];
-
-        function addCommand(name, icon, action) {
-            playPop();
-            speak(name);
-            sequence.push({ name, icon, action });
-            renderSequence();
-        }
-
-        function renderSequence() {
-            const bar = document.getElementById('sequence-bar');
-            bar.innerHTML = '';
-            sequence.forEach((item) => {
-                const el = document.createElement('div');
-                el.className = 'block-tag';
-                el.innerHTML = `${item.icon} ${item.name}`;
-                bar.appendChild(el);
-            });
-        }
-
-        function clearSequence() {
-            sequence = [];
-            renderSequence();
-            playPop();
-            speak('Secuencia borrada');
-        }
-
-        async function runSequence() {
-            if (sequence.length === 0) {
-                speak('Agrega comandos primero');
-                return;
-            }
-            speak('¡Robot en marcha!');
-            const robot = document.getElementById('robot-avatar');
-            
-            for (let cmd of sequence) {
-                if (cmd.action === 'move-right') {
-                    robot.style.transform = 'translateX(60px)';
-                    playTone(400);
-                } else if (cmd.action === 'jump') {
-                    robot.style.transform = 'translateY(-50px)';
-                    playTone(700);
-                } else if (cmd.action === 'spin') {
-                    robot.style.transform = 'rotate(360deg)';
-                    playTone(500);
-                } else if (cmd.action === 'sing') {
-                    playChime();
-                }
-                
-                await new Promise(r => setTimeout(r, 600));
-                robot.style.transform = 'none';
-                await new Promise(r => setTimeout(r, 200));
-            }
-
-            addStar();
-            sendToGoogleSheet('ROBOT_STEM', `Secuencia ejecutada: ${sequence.length} pasos`);
-            clearSequence();
-        }
-
-        // INTEGRACIÓN CON GOOGLE APPS SCRIPT
-        function openConfig() { document.getElementById('config-modal').style.display = 'flex'; }
-        function closeConfig() { document.getElementById('config-modal').style.display = 'none'; }
-
-        function saveConfig() {
-            const url = document.getElementById('webhook-url').value;
-            localStorage.setItem('gas_url', url);
-            closeConfig();
-            playChime();
-        }
-
-        function sendToGoogleSheet(evento, detalle) {
-            const gasUrl = localStorage.getItem('gas_url');
-            if (!gasUrl) return;
-
-            fetch(gasUrl, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    fecha: new Date().toLocaleString(),
-                    evento: evento,
-                    detalle: detalle,
-                    estrellas: stars
-                })
-            }).catch(e => console.log('Error enviando a Sheet', e));
-        }
-    </script>
+    // Inicialización al cargar la ventana
+    window.onload = function() {
+      switchTab('tab-art');
+      window.addEventListener('resize', resizeCanvas);
+    };
+  </script>
 </body>
 </html>
