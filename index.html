@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Mi Mundo Mágico de Aventuras</title>
+  <title>El Mundo Mágico de Paola</title>
   
   <!-- Tailwind CSS para Estilos -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -47,6 +47,16 @@
       -ms-overflow-style: none;
       scrollbar-width: none;
     }
+
+    /* Animación especial del Robot */
+    @keyframes pulse-shake {
+      0%, 100% { transform: scale(1) rotate(0deg); }
+      25% { transform: scale(1.3) rotate(-15deg); }
+      75% { transform: scale(1.3) rotate(15deg); }
+    }
+    .robot-super {
+      animation: pulse-shake 0.4s infinite;
+    }
   </style>
 </head>
 <body class="bg-slate-100 font-sans w-screen flex flex-col overflow-hidden" style="height: 100dvh; min-height: -webkit-fill-available;">
@@ -54,12 +64,12 @@
   <!-- ENCABEZADO SUPERIOR / RECOMPENSAS -->
   <header class="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-white p-3 flex justify-between items-center shadow-md shrink-0 z-10">
     <div class="flex items-center space-x-2">
-      <button onclick="speakText('¡Hola campeona! Elige una actividad abajo')" class="bg-white/20 p-2 rounded-full active:scale-95 transition">
+      <button onclick="speakText('¡Hola Paola campeona! Elige una actividad abajo para empezar a jugar.')" class="bg-white/20 p-2 rounded-full active:scale-95 transition">
         <span class="text-2xl">👑</span>
       </button>
       <div>
-        <h1 class="font-black text-lg leading-none">Aventuras Mágicas</h1>
-        <p class="text-xs text-pink-100 font-medium">¡A jugar y crear!</p>
+        <h1 class="font-black text-lg leading-none">Mundo Mágico de Paola</h1>
+        <p class="text-xs text-pink-100 font-medium">¡Bienvenida Paola! A jugar y crear</p>
       </div>
     </div>
 
@@ -78,19 +88,25 @@
       
       <!-- Barra de herramientas superior -->
       <div class="bg-white p-2 rounded-2xl shadow flex items-center justify-between gap-2 overflow-x-auto shrink-0 border border-pink-100 no-scrollbar">
-        <!-- Colores principales -->
+        <!-- Paleta de Colores Ampliada para Paola -->
         <div class="flex items-center space-x-1.5 shrink-0">
           <button onclick="setColor('#ef4444')" class="w-8 h-8 rounded-full bg-red-500 border-2 border-white shadow active:scale-90 shrink-0"></button>
-          <button onclick="setColor('#3b82f6')" class="w-8 h-8 rounded-full bg-blue-500 border-2 border-white shadow active:scale-90 shrink-0"></button>
-          <button onclick="setColor('#22c55e')" class="w-8 h-8 rounded-full bg-green-500 border-2 border-white shadow active:scale-90 shrink-0"></button>
+          <button onclick="setColor('#f97316')" class="w-8 h-8 rounded-full bg-orange-500 border-2 border-white shadow active:scale-90 shrink-0"></button>
           <button onclick="setColor('#eab308')" class="w-8 h-8 rounded-full bg-yellow-500 border-2 border-white shadow active:scale-90 shrink-0"></button>
+          <button onclick="setColor('#22c55e')" class="w-8 h-8 rounded-full bg-green-500 border-2 border-white shadow active:scale-90 shrink-0"></button>
+
+          <button onclick="setColor('#14b8a6')" class="w-8 h-8 rounded-full bg-teal-500 border-2 border-white shadow active:scale-90 shrink-0"></button>
+          <button onclick="setColor('#3b82f6')" class="w-8 h-8 rounded-full bg-blue-500 border-2 border-white shadow active:scale-90 shrink-0"></button>
+          <button onclick="setColor('#8b5cf6')" class="w-8 h-8 rounded-full bg-purple-500 border-2 border-white shadow active:scale-90 shrink-0"></button>
           <button onclick="setColor('#ec4899')" class="w-8 h-8 rounded-full bg-pink-500 border-2 border-white shadow active:scale-90 shrink-0"></button>
-          <button onclick="setColor('#a855f7')" class="w-8 h-8 rounded-full bg-purple-500 border-2 border-white shadow active:scale-90 shrink-0"></button>
+
+          <button onclick="setColor('#78350f')" class="w-8 h-8 rounded-full bg-amber-900 border-2 border-white shadow active:scale-90 shrink-0"></button>
+          <button onclick="setColor('#0f172a')" class="w-8 h-8 rounded-full bg-slate-900 border-2 border-white shadow active:scale-90 shrink-0"></button>
         </div>
 
         <div class="h-6 w-px bg-slate-200 shrink-0"></div>
 
-        <!-- Sellos mágicos solicitados (Corazón, Estrella, Unicornio, Flor, Mariposa, Corona) -->
+        <!-- Sellos Mágicos (Incluye Corazón para Paola) -->
         <div class="flex items-center space-x-1 overflow-x-auto no-scrollbar shrink-0">
           <button onclick="setStamp('💖')" title="Corazón" class="px-2 py-1 bg-pink-100 text-pink-700 rounded-xl text-xl font-bold shadow-sm active:scale-90 shrink-0">💖</button>
           <button onclick="setStamp('⭐')" title="Estrella" class="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-xl text-xl font-bold shadow-sm active:scale-90 shrink-0">⭐</button>
@@ -98,6 +114,7 @@
           <button onclick="setStamp('🌸')" title="Flor" class="px-2 py-1 bg-rose-100 text-rose-700 rounded-xl text-xl font-bold shadow-sm active:scale-90 shrink-0">🌸</button>
           <button onclick="setStamp('🦋')" title="Mariposa" class="px-2 py-1 bg-blue-100 text-blue-700 rounded-xl text-xl font-bold shadow-sm active:scale-90 shrink-0">🦋</button>
           <button onclick="setStamp('👑')" title="Corona" class="px-2 py-1 bg-amber-100 text-amber-700 rounded-xl text-xl font-bold shadow-sm active:scale-90 shrink-0">👑</button>
+          <button onclick="setStamp('🌈')" title="Arcoíris" class="px-2 py-1 bg-indigo-100 text-indigo-700 rounded-xl text-xl font-bold shadow-sm active:scale-90 shrink-0">🌈</button>
           
           <button onclick="clearCanvas()" title="Borrar" class="p-2 bg-red-100 text-red-600 rounded-xl font-bold text-xs flex items-center space-x-1 active:scale-90 shrink-0">
             <i data-lucide="trash-2" class="w-5 h-5"></i>
@@ -112,42 +129,47 @@
     </section>
 
     <!-- ==================== 2. MÓDULO RETOS DE MOVIMIENTO ==================== -->
-    <section id="tab-motion" class="tab-content absolute inset-0 hidden flex-col p-4 justify-between items-center text-center">
+    <section id="tab-motion" class="tab-content absolute inset-0 hidden flex-col p-4 justify-between items-center text-center overflow-y-auto no-scrollbar">
       
-      <div class="w-full bg-gradient-to-br from-amber-400 to-orange-500 rounded-3xl p-6 text-white shadow-lg border-4 border-orange-200 flex flex-col items-center justify-center space-y-4">
+      <div class="w-full bg-gradient-to-br from-amber-400 via-orange-500 to-pink-500 rounded-3xl p-5 text-white shadow-lg border-4 border-orange-200 flex flex-col items-center justify-center space-y-3">
         
         <div class="bg-white/20 p-4 rounded-full text-6xl animate-bounce" id="challenge-icon">
           🤸‍♀️
         </div>
 
         <h2 class="text-2xl font-black" id="challenge-title">¡Misión de Gimnasta!</h2>
-        <p class="text-lg font-bold text-orange-100" id="challenge-desc">Haz 5 saltos de rana en tu lugar</p>
+        <p class="text-lg font-bold text-orange-100" id="challenge-desc">¡Haz 5 saltos gigantes de rana en tu lugar Paola!</p>
 
-        <!-- Botón Gigante de Lectura por Voz -->
-        <button onclick="readCurrentChallenge()" class="bg-white text-orange-600 px-6 py-3 rounded-full font-black text-lg shadow-md flex items-center space-x-2 active:scale-95">
-          <span class="text-2xl">🔊</span>
-          <span>Escuchar Reto</span>
-        </button>
+        <!-- Botones de Acción -->
+        <div class="flex flex-wrap justify-center gap-2">
+          <button onclick="readCurrentChallenge()" class="bg-white text-orange-600 px-5 py-2.5 rounded-full font-black text-base shadow-md flex items-center space-x-2 active:scale-95">
+            <span class="text-xl">🔊</span>
+            <span>Escuchar Reto</span>
+          </button>
+          <button onclick="nextRandomChallenge()" class="bg-amber-900/30 text-white border border-white/40 px-4 py-2.5 rounded-full font-bold text-sm shadow flex items-center space-x-1 active:scale-95">
+            <span>🎲 Cambiar Reto</span>
+          </button>
+        </div>
       </div>
 
       <!-- Botón de Cumplido / Siguiente -->
-      <button onclick="completeChallenge()" class="w-full max-w-xs bg-emerald-500 text-white font-black text-xl py-5 rounded-2xl shadow-lg border-b-4 border-emerald-700 active:scale-95 flex items-center justify-center space-x-2">
-        <span>¡LO HICE!</span>
+      <button onclick="completeChallenge()" class="w-full max-w-xs my-2 bg-emerald-500 text-white font-black text-xl py-4 rounded-2xl shadow-lg border-b-4 border-emerald-700 active:scale-95 flex items-center justify-center space-x-2 shrink-0">
+        <span>¡LO HICISTE PAOLA!</span>
         <span class="text-2xl">🎉</span>
       </button>
 
     </section>
 
     <!-- ==================== 3. MÓDULO ROBOT LAB ==================== -->
-    <section id="tab-robot" class="tab-content absolute inset-0 hidden flex-col p-3 space-y-3">
+    <section id="tab-robot" class="tab-content absolute inset-0 hidden flex-col p-3 space-y-2">
       
       <!-- Tablero del Robot -->
       <div class="bg-slate-800 rounded-3xl p-4 text-white flex-1 flex flex-col justify-between items-center relative overflow-hidden border-4 border-indigo-300">
         
         <!-- Estado del Robot -->
         <div class="text-center">
-          <p class="text-xs text-indigo-300 font-bold uppercase tracking-wider">Misión del Robot</p>
-          <p id="robot-status-text" class="text-sm font-bold text-yellow-400">Programa los pasos del robot</p>
+          <p class="text-xs text-indigo-300 font-bold uppercase tracking-wider">Laboratorio del Robot de Paola</p>
+          <p id="robot-status-text" class="text-sm font-bold text-yellow-400">Toca los botones de abajo para programar</p>
         </div>
 
         <!-- Avatar del Robot -->
@@ -156,33 +178,48 @@
         </div>
 
         <!-- Secuencia de Bloques Programados -->
-        <div class="w-full bg-slate-900/60 p-2 rounded-xl flex items-center justify-center space-x-2 min-h-[50px] border border-slate-700" id="command-sequence">
-          <span class="text-slate-500 text-xs italic">Toca flechas abajo...</span>
+        <div class="w-full bg-slate-900/60 p-2 rounded-xl flex items-center justify-center space-x-1.5 min-h-[52px] border border-slate-700 overflow-x-auto no-scrollbar" id="command-sequence">
+          <span class="text-slate-500 text-xs italic">Elige tus movimientos...</span>
         </div>
       </div>
 
       <!-- Botones de Comandos Físicos -->
-      <div class="bg-white p-3 rounded-3xl shadow-md border border-indigo-100 space-y-2">
-        <p class="text-xs font-black text-slate-400 uppercase text-center">Instrucciones</p>
+      <div class="bg-white p-3 rounded-3xl shadow-md border border-indigo-100 space-y-2 shrink-0">
+        <p class="text-xs font-black text-slate-400 uppercase text-center">Controles del Robot</p>
 
-        <div class="grid grid-cols-3 gap-2">
-          <button onclick="addRobotCommand('⬆️', 'Avanzar')" class="bg-indigo-500 text-white p-4 rounded-2xl font-black text-2xl shadow active:scale-90 flex justify-center items-center">
-            ⬆️
+        <div class="grid grid-cols-3 sm:grid-cols-6 gap-2">
+          <button onclick="addRobotCommand('⬆️', 'Avanzar')" class="bg-indigo-500 text-white p-3 rounded-2xl font-black text-xl shadow active:scale-90 flex flex-col items-center justify-center">
+            <span>⬆️</span>
+            <span class="text-[10px] uppercase font-bold mt-0.5">Avanzar</span>
           </button>
-          <button onclick="addRobotCommand('🌀', 'Girar')" class="bg-purple-500 text-white p-4 rounded-2xl font-black text-2xl shadow active:scale-90 flex justify-center items-center">
-            🌀
+          <button onclick="addRobotCommand('⬇️', 'Retroceder')" class="bg-blue-500 text-white p-3 rounded-2xl font-black text-xl shadow active:scale-90 flex flex-col items-center justify-center">
+            <span>⬇️</span>
+            <span class="text-[10px] uppercase font-bold mt-0.5">Atrás</span>
           </button>
-          <button onclick="addRobotCommand('🤸', 'Saltar')" class="bg-pink-500 text-white p-4 rounded-2xl font-black text-2xl shadow active:scale-90 flex justify-center items-center">
-            🤸
+          <button onclick="addRobotCommand('🌀', 'Girar')" class="bg-purple-500 text-white p-3 rounded-2xl font-black text-xl shadow active:scale-90 flex flex-col items-center justify-center">
+            <span>🌀</span>
+            <span class="text-[10px] uppercase font-bold mt-0.5">Girar</span>
+          </button>
+          <button onclick="addRobotCommand('🤸', 'Saltar')" class="bg-pink-500 text-white p-3 rounded-2xl font-black text-xl shadow active:scale-90 flex flex-col items-center justify-center">
+            <span>🤸</span>
+            <span class="text-[10px] uppercase font-bold mt-0.5">Saltar</span>
+          </button>
+          <button onclick="addRobotCommand('💖', 'Amor')" class="bg-rose-500 text-white p-3 rounded-2xl font-black text-xl shadow active:scale-90 flex flex-col items-center justify-center">
+            <span>💖</span>
+            <span class="text-[10px] uppercase font-bold mt-0.5">Cariño</span>
+          </button>
+          <button onclick="addRobotCommand('⚡', 'Súper Velocidad')" class="bg-amber-500 text-white p-3 rounded-2xl font-black text-xl shadow active:scale-90 flex flex-col items-center justify-center">
+            <span>⚡</span>
+            <span class="text-[10px] uppercase font-bold mt-0.5">Súper</span>
           </button>
         </div>
 
-        <!-- Botón Ejecutar -->
+        <!-- Botones de Acción del Robot -->
         <div class="flex space-x-2 pt-1">
-          <button onclick="clearRobotCommands()" class="bg-slate-200 text-slate-700 p-3 rounded-xl font-bold text-xs active:scale-90">
+          <button onclick="clearRobotCommands()" class="bg-slate-200 text-slate-700 px-4 py-2.5 rounded-xl font-bold text-xs active:scale-90 shrink-0">
             Borrar
           </button>
-          <button onclick="runRobotSequence()" class="flex-1 bg-emerald-500 text-white p-3 rounded-xl font-black text-sm shadow active:scale-95 text-center flex items-center justify-center space-x-1">
+          <button onclick="runRobotSequence()" class="flex-1 bg-emerald-500 text-white py-2.5 px-4 rounded-xl font-black text-sm shadow active:scale-95 text-center flex items-center justify-center space-x-2">
             <span>¡INICIAR ROBOT!</span>
             <span>🚀</span>
           </button>
@@ -222,14 +259,14 @@
     let currentStamp = null;
     let isDrawing = false;
 
-    // --- SÍNTESIS DE VOZ (LECTORA) ---
+    // --- SÍNTESIS DE VOZ (LECTORA PERSONALIZADA PARA PAOLA) ---
     function speakText(text) {
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel(); // Cancelar anteriores
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'es-ES';
-        utterance.rate = 0.9; // Hablar un poco más despacio
-        utterance.pitch = 1.1; // Tono más amigable
+        utterance.rate = 0.9; // Hablar despacio y claro
+        utterance.pitch = 1.15; // Tono alegre
         window.speechSynthesis.speak(utterance);
       }
     }
@@ -246,13 +283,13 @@
 
       // Acciones específicas por pestaña
       if (tabId === 'tab-art') {
-        speakText("¡Módulo de Arte! Dibuja lo que quieras.");
+        speakText("¡Lienzo de Arte! Dibuja lo que quieras Paola.");
         resizeCanvas();
       } else if (tabId === 'tab-motion') {
-        speakText("¡Retos de movimiento!");
+        speakText("¡Retos de movimiento! Prepárate Paola.");
         readCurrentChallenge();
       } else if (tabId === 'tab-robot') {
-        speakText("¡Laboratorio del Robot!");
+        speakText("¡Laboratorio de Robot de Paola!");
       }
     }
 
@@ -277,12 +314,12 @@
 
     function setStamp(stamp) {
       currentStamp = stamp;
-      speakText("Sello mágico seleccionado");
+      speakText("Sello mágico elegido");
     }
 
     function clearCanvas() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      speakText("Lienzo limpio");
+      speakText("Lienzo limpio Paola");
     }
 
     function startDrawing(e) {
@@ -290,7 +327,7 @@
       const pos = getPos(e);
       
       if (currentStamp) {
-        ctx.font = '40px serif';
+        ctx.font = '42px serif';
         ctx.fillText(currentStamp, pos.x - 20, pos.y + 15);
         isDrawing = false;
         return;
@@ -332,13 +369,18 @@
     canvas.addEventListener('touchend', stopDrawing);
 
 
-    // --- LÓGICA DE RETOS DE MOVIMIENTO ---
+    // --- LÓGICA DE RETOS DE MOVIMIENTO AMPLIADA ---
     const challenges = [
-      { icon: '🤸‍♀️', title: '¡Misión de Gimnasta!', desc: 'Haz 5 saltos gigantes de rana en tu lugar' },
-      { icon: '⚽', title: '¡Pase de Fútbol!', desc: 'Patea 3 pelotas imaginarias muy fuerte' },
-      { icon: '💃', title: '¡Pausa de Baile!', desc: 'Baila como una estrella durante 10 segundos' },
-      { icon: '🦒', title: '¡Reto de Equilibrio!', desc: 'Párate en un solo pie como un flamenco' },
-      { icon: '⭐', title: '¡Estiramiento Mágico!', desc: 'Toca la punta de tus pies sin doblar las rodillas' }
+      { icon: '🤸‍♀️', title: '¡Misión Gimnasta!', desc: '¡Paola, haz 5 saltos gigantes de rana en tu lugar!' },
+      { icon: '⚽', title: '¡Pase de Fútbol!', desc: 'Patea 3 pelotas imaginarias súper fuerte con el pie.' },
+      { icon: '💃', title: '¡Pausa de Baile!', desc: '¡Baila como una estrella de música por 10 segundos!' },
+      { icon: '🦒', title: '¡Reto de Equilibrio!', desc: 'Párate en un solo pie como un flamenco por 5 segundos.' },
+      { icon: '⭐', title: '¡Estiramiento Mágico!', desc: 'Toca las puntas de tus pies sin doblar las rodillas.' },
+      { icon: '✈️', title: '¡Vuelo de Avión!', desc: 'Abre tus brazos como un avión y gira 3 veces suavemente.' },
+      { icon: '👏', title: '¡Aplausos de Victoria!', desc: 'Da 5 aplausos fuertes arriba de tu cabeza.' },
+      { icon: '🦁', title: '¡Paso de Gigante!', desc: 'Da 4 pasos gigantescos de león por la habitación.' },
+      { icon: '👑', title: '¡Pose de Princesa!', desc: 'Ponte una corona imaginaria y haz una reverencia brillante.' },
+      { icon: '🐝', title: '¡Zumbido de Abeja!', desc: 'Corre en tu lugar muy rápido zumbando como una abejita.' }
     ];
 
     let currentChallengeIndex = 0;
@@ -348,25 +390,38 @@
       speakText(`${ch.title}. ${ch.desc}`);
     }
 
-    function completeChallenge() {
-      stars += 1;
-      document.getElementById('star-count').innerText = stars;
-      speakText("¡Excelente trabajo! Ganaste una estrella.");
+    function nextRandomChallenge() {
+      let nextIndex = Math.floor(Math.random() * challenges.length);
+      if (nextIndex === currentChallengeIndex) {
+        nextIndex = (currentChallengeIndex + 1) % challenges.length;
+      }
+      currentChallengeIndex = nextIndex;
+      updateChallengeUI();
+      readCurrentChallenge();
+    }
 
-      // Cambiar al siguiente reto
-      currentChallengeIndex = (currentChallengeIndex + 1) % challenges.length;
+    function updateChallengeUI() {
       const ch = challenges[currentChallengeIndex];
-
       document.getElementById('challenge-icon').innerText = ch.icon;
       document.getElementById('challenge-title').innerText = ch.title;
       document.getElementById('challenge-desc').innerText = ch.desc;
     }
 
-    // --- LÓGICA DEL ROBOT ---
+    function completeChallenge() {
+      stars += 1;
+      document.getElementById('star-count').innerText = stars;
+      speakText("¡Excelente trabajo Paola! Ganaste una estrella brillante.");
+      nextRandomChallenge();
+    }
+
+    // --- LÓGICA AMPLIADA DEL ROBOT ---
     let robotCommands = [];
 
     function addRobotCommand(symbol, name) {
-      if (robotCommands.length >= 5) return;
+      if (robotCommands.length >= 6) {
+        speakText("¡Secuencia llena!");
+        return;
+      }
       robotCommands.push(symbol);
       updateRobotUI();
       speakText(name);
@@ -381,39 +436,60 @@
     function updateRobotUI() {
       const container = document.getElementById('command-sequence');
       if (robotCommands.length === 0) {
-        container.innerHTML = '<span class="text-slate-500 text-xs italic">Toca flechas abajo...</span>';
+        container.innerHTML = '<span class="text-slate-500 text-xs italic">Elige tus movimientos...</span>';
       } else {
-        container.innerHTML = robotCommands.map(cmd => `<span class="bg-indigo-600 text-white font-bold p-2 rounded-lg text-lg">${cmd}</span>`).join('');
+        container.innerHTML = robotCommands.map(cmd => `<span class="bg-indigo-600 text-white font-bold p-2 rounded-lg text-base shrink-0">${cmd}</span>`).join('');
       }
     }
 
     function runRobotSequence() {
       if (robotCommands.length === 0) {
-        speakText("Primero pon instrucciones");
+        speakText("Paola, primero elige instrucciones para el robot.");
         return;
       }
 
-      speakText("¡Robot iniciando animación!");
+      speakText("¡Iniciando rutina del robot de Paola!");
       const avatar = document.getElementById('robot-avatar');
+      const statusText = document.getElementById('robot-status-text');
       
       let step = 0;
       const interval = setInterval(() => {
         if (step >= robotCommands.length) {
           clearInterval(interval);
           avatar.className = "text-7xl transition-all duration-300 transform";
+          avatar.innerText = "🤖";
+          statusText.innerText = "¡Misión Cumplida!";
           stars += 1;
           document.getElementById('star-count').innerText = stars;
-          speakText("¡Misión cumplida! El robot llegó a la meta.");
+          speakText("¡Bravo Paola! El robot completó todos tus comandos.");
           return;
         }
 
         const cmd = robotCommands[step];
-        if (cmd === '⬆️') avatar.className = "text-7xl transition-all duration-300 transform -translate-y-6";
-        if (cmd === '🌀') avatar.className = "text-7xl transition-all duration-300 transform rotate-180";
-        if (cmd === '🤸') avatar.className = "text-7xl transition-all duration-300 transform scale-125";
+        statusText.innerText = `Ejecutando paso ${step + 1}...`;
+
+        if (cmd === '⬆️') {
+          avatar.className = "text-7xl transition-all duration-300 transform -translate-y-8";
+          avatar.innerText = "🤖";
+        } else if (cmd === '⬇️') {
+          avatar.className = "text-7xl transition-all duration-300 transform translate-y-8";
+          avatar.innerText = "🤖";
+        } else if (cmd === '🌀') {
+          avatar.className = "text-7xl transition-all duration-300 transform rotate-180";
+          avatar.innerText = "🤖";
+        } else if (cmd === '🤸') {
+          avatar.className = "text-7xl transition-all duration-300 transform scale-125 -translate-y-4";
+          avatar.innerText = "🤸🤖";
+        } else if (cmd === '💖') {
+          avatar.className = "text-7xl transition-all duration-300 transform scale-110";
+          avatar.innerText = "😍🤖";
+        } else if (cmd === '⚡') {
+          avatar.className = "text-7xl transition-all duration-100 transform robot-super";
+          avatar.innerText = "⚡🤖⚡";
+        }
 
         step++;
-      }, 700);
+      }, 750);
     }
 
     // Inicialización al cargar la ventana
