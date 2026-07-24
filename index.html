@@ -12,7 +12,10 @@
   
   <style>
     /* Prevenir selección de texto y scroll indeseado en móviles */
-    body {
+    html, body {
+      height: 100%;
+      height: 100dvh; /* Adaptación a navegadores móviles con barra dinámica */
+      overflow: hidden;
       touch-action: manipulation;
       user-select: none;
       -webkit-user-select: none;
@@ -35,12 +38,21 @@
       background-color: #fdf2f8;
       color: #be185d;
     }
+    
+    /* Ocultar barra de scroll estética */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
   </style>
 </head>
-<body class="bg-slate-100 font-sans h-screen w-screen flex flex-col overflow-hidden">
+<body class="bg-slate-100 font-sans w-screen flex flex-col overflow-hidden" style="height: 100dvh; min-height: -webkit-fill-available;">
 
   <!-- ENCABEZADO SUPERIOR / RECOMPENSAS -->
-  <header class="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-white p-3 flex justify-between items-center shadow-md shrink-0">
+  <header class="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-white p-3 flex justify-between items-center shadow-md shrink-0 z-10">
     <div class="flex items-center space-x-2">
       <button onclick="speakText('¡Hola campeona! Elige una actividad abajo')" class="bg-white/20 p-2 rounded-full active:scale-95 transition">
         <span class="text-2xl">👑</span>
@@ -59,35 +71,42 @@
   </header>
 
   <!-- CONTENEDOR PRINCIPAL DE PANTALLAS -->
-  <main class="flex-1 relative overflow-hidden bg-slate-50">
+  <main class="flex-1 relative overflow-hidden bg-slate-50 min-h-0">
     
     <!-- ==================== 1. MÓDULO LIENZO DE DIBUJO ==================== -->
     <section id="tab-art" class="tab-content absolute inset-0 flex flex-col p-2 space-y-2">
       
       <!-- Barra de herramientas superior -->
-      <div class="bg-white p-2 rounded-2xl shadow flex items-center justify-between gap-1 overflow-x-auto shrink-0 border border-pink-100">
+      <div class="bg-white p-2 rounded-2xl shadow flex items-center justify-between gap-2 overflow-x-auto shrink-0 border border-pink-100 no-scrollbar">
         <!-- Colores principales -->
-        <div class="flex items-center space-x-1">
-          <button onclick="setColor('#ef4444')" class="w-9 h-9 rounded-full bg-red-500 border-2 border-white shadow active:scale-90"></button>
-          <button onclick="setColor('#3b82f6')" class="w-9 h-9 rounded-full bg-blue-500 border-2 border-white shadow active:scale-90"></button>
-          <button onclick="setColor('#22c55e')" class="w-9 h-9 rounded-full bg-green-500 border-2 border-white shadow active:scale-90"></button>
-          <button onclick="setColor('#eab308')" class="w-9 h-9 rounded-full bg-yellow-500 border-2 border-white shadow active:scale-90"></button>
-          <button onclick="setColor('#ec4899')" class="w-9 h-9 rounded-full bg-pink-500 border-2 border-white shadow active:scale-90"></button>
-          <button onclick="setColor('#a855f7')" class="w-9 h-9 rounded-full bg-purple-500 border-2 border-white shadow active:scale-90"></button>
+        <div class="flex items-center space-x-1.5 shrink-0">
+          <button onclick="setColor('#ef4444')" class="w-8 h-8 rounded-full bg-red-500 border-2 border-white shadow active:scale-90 shrink-0"></button>
+          <button onclick="setColor('#3b82f6')" class="w-8 h-8 rounded-full bg-blue-500 border-2 border-white shadow active:scale-90 shrink-0"></button>
+          <button onclick="setColor('#22c55e')" class="w-8 h-8 rounded-full bg-green-500 border-2 border-white shadow active:scale-90 shrink-0"></button>
+          <button onclick="setColor('#eab308')" class="w-8 h-8 rounded-full bg-yellow-500 border-2 border-white shadow active:scale-90 shrink-0"></button>
+          <button onclick="setColor('#ec4899')" class="w-8 h-8 rounded-full bg-pink-500 border-2 border-white shadow active:scale-90 shrink-0"></button>
+          <button onclick="setColor('#a855f7')" class="w-8 h-8 rounded-full bg-purple-500 border-2 border-white shadow active:scale-90 shrink-0"></button>
         </div>
 
-        <!-- Acciones -->
-        <div class="flex items-center space-x-1">
-          <button onclick="setStamp('⭐')" class="p-2 bg-yellow-100 text-yellow-700 rounded-xl text-xl font-bold shadow-sm active:scale-90">⭐</button>
-          <button onclick="setStamp('🦄')" class="p-2 bg-purple-100 text-purple-700 rounded-xl text-xl font-bold shadow-sm active:scale-90">🦄</button>
-          <button onclick="clearCanvas()" class="p-2 bg-red-100 text-red-600 rounded-xl font-bold text-xs flex items-center space-x-1 active:scale-90">
+        <div class="h-6 w-px bg-slate-200 shrink-0"></div>
+
+        <!-- Sellos mágicos solicitados (Corazón, Estrella, Unicornio, Flor, Mariposa, Corona) -->
+        <div class="flex items-center space-x-1 overflow-x-auto no-scrollbar shrink-0">
+          <button onclick="setStamp('💖')" title="Corazón" class="px-2 py-1 bg-pink-100 text-pink-700 rounded-xl text-xl font-bold shadow-sm active:scale-90 shrink-0">💖</button>
+          <button onclick="setStamp('⭐')" title="Estrella" class="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-xl text-xl font-bold shadow-sm active:scale-90 shrink-0">⭐</button>
+          <button onclick="setStamp('🦄')" title="Unicornio" class="px-2 py-1 bg-purple-100 text-purple-700 rounded-xl text-xl font-bold shadow-sm active:scale-90 shrink-0">🦄</button>
+          <button onclick="setStamp('🌸')" title="Flor" class="px-2 py-1 bg-rose-100 text-rose-700 rounded-xl text-xl font-bold shadow-sm active:scale-90 shrink-0">🌸</button>
+          <button onclick="setStamp('🦋')" title="Mariposa" class="px-2 py-1 bg-blue-100 text-blue-700 rounded-xl text-xl font-bold shadow-sm active:scale-90 shrink-0">🦋</button>
+          <button onclick="setStamp('👑')" title="Corona" class="px-2 py-1 bg-amber-100 text-amber-700 rounded-xl text-xl font-bold shadow-sm active:scale-90 shrink-0">👑</button>
+          
+          <button onclick="clearCanvas()" title="Borrar" class="p-2 bg-red-100 text-red-600 rounded-xl font-bold text-xs flex items-center space-x-1 active:scale-90 shrink-0">
             <i data-lucide="trash-2" class="w-5 h-5"></i>
           </button>
         </div>
       </div>
 
       <!-- Área de Dibujo Canvas -->
-      <div class="flex-1 bg-white rounded-3xl shadow-inner border-4 border-pink-200 relative overflow-hidden canvas-container">
+      <div class="flex-1 bg-white rounded-3xl shadow-inner border-4 border-pink-200 relative overflow-hidden canvas-container min-h-0">
         <canvas id="paintCanvas" class="w-full h-full block cursor-crosshair"></canvas>
       </div>
     </section>
@@ -174,20 +193,20 @@
 
   </main>
 
-  <!-- NAVEGACIÓN INFERIOR (TAB BAR FIJA) -->
-  <nav class="bg-white border-t border-slate-200 grid grid-cols-3 shrink-0 shadow-lg">
-    <button onclick="switchTab('tab-art')" id="btn-tab-art" class="py-3 flex flex-col items-center justify-center text-slate-500 tab-active">
-      <i data-lucide="palette" class="w-6 h-6 mb-1"></i>
+  <!-- NAVEGACIÓN INFERIOR (TAB BAR FIJA CON SAFE-AREA PARA MÓVILES) -->
+  <nav class="bg-white border-t-2 border-pink-200 grid grid-cols-3 shrink-0 shadow-lg z-50 relative" style="padding-bottom: max(0.5rem, env(safe-area-inset-bottom));">
+    <button onclick="switchTab('tab-art')" id="btn-tab-art" class="py-2.5 flex flex-col items-center justify-center text-slate-500 tab-active">
+      <i data-lucide="palette" class="w-6 h-6 mb-0.5"></i>
       <span class="text-xs font-black">Arte</span>
     </button>
 
-    <button onclick="switchTab('tab-motion')" id="btn-tab-motion" class="py-3 flex flex-col items-center justify-center text-slate-500">
-      <i data-lucide="activity" class="w-6 h-6 mb-1"></i>
+    <button onclick="switchTab('tab-motion')" id="btn-tab-motion" class="py-2.5 flex flex-col items-center justify-center text-slate-500">
+      <i data-lucide="activity" class="w-6 h-6 mb-0.5"></i>
       <span class="text-xs font-black">Moverse</span>
     </button>
 
-    <button onclick="switchTab('tab-robot')" id="btn-tab-robot" class="py-3 flex flex-col items-center justify-center text-slate-500">
-      <i data-lucide="bot" class="w-6 h-6 mb-1"></i>
+    <button onclick="switchTab('tab-robot')" id="btn-tab-robot" class="py-2.5 flex flex-col items-center justify-center text-slate-500">
+      <i data-lucide="bot" class="w-6 h-6 mb-0.5"></i>
       <span class="text-xs font-black">Robot</span>
     </button>
   </nav>
