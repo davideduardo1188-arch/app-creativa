@@ -4,42 +4,87 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>El Mundo Mágico de Paola</title>
-  
-  <!-- Tailwind CSS para Estilos -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#ec4899">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="icon" href="icon-192.png">
+
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
   
   <style>
-    /* Prevenir selección de texto y scroll indeseado en móviles */
+    /* ESTILOS BASE Y RESETS DE PANTALLA COMPLETA */
     html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
       height: 100%;
-      height: 100dvh; /* Adaptación a navegadores móviles con barra dinámica */
+      height: 100dvh;
       overflow: hidden;
-      touch-action: manipulation;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      box-sizing: border-box;
+      background-color: #f8fafc;
       user-select: none;
       -webkit-user-select: none;
-      -webkit-touch-callout: none;
-      overscroll-behavior-y: contain;
+      touch-action: manipulation;
     }
-    
+
+    *, *:before, *:after {
+      box-sizing: inherit;
+    }
+
+    #app-container {
+      display: flex;
+      flex-direction: column;
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      overflow: hidden;
+      position: relative;
+    }
+
+    main#main-content {
+      flex: 1 1 0%;
+      min-height: 0;
+      width: 100%;
+      position: relative;
+      overflow: hidden;
+      background-color: #f1f5f9;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .tab-content {
+      display: none !important;
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      flex-direction: column;
+      box-sizing: border-box;
+      overflow-y: auto;
+    }
+
+    .tab-content.active {
+      display: flex !important;
+    }
+
     .canvas-container {
+      touch-action: none !important;
+      position: relative;
+      width: 100%;
+      height: 100%;
+      min-height: 220px;
+      flex: 1;
+      background-color: #ffffff;
+      overflow: hidden;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
       touch-action: none;
     }
 
-    /* Animaciones suaves */
-    .bounce-active:active {
-      transform: scale(0.92);
-    }
-
-    /* Pestaña activa */
-    .tab-active {
-      border-top: 4px solid #ec4899;
-      background-color: #fdf2f8;
-      color: #be185d;
-    }
-    
-    /* Ocultar barra de scroll estética */
     .no-scrollbar::-webkit-scrollbar {
       display: none;
     }
@@ -48,455 +93,1571 @@
       scrollbar-width: none;
     }
 
-    /* Animación especial del Robot */
-    @keyframes pulse-shake {
-      0%, 100% { transform: scale(1) rotate(0deg); }
-      25% { transform: scale(1.3) rotate(-15deg); }
-      75% { transform: scale(1.3) rotate(15deg); }
+    /* ANIMACIONES DIVERTIDAS */
+    @keyframes pulse-star {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.3) rotate(15deg); }
     }
-    .robot-super {
-      animation: pulse-shake 0.4s infinite;
+    .animate-star {
+      animation: pulse-star 0.5s ease-in-out;
+    }
+
+    @keyframes pop-in {
+      0% { transform: scale(0.8); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .animate-pop {
+      animation: pop-in 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .card-flip {
+      perspective: 1000px;
+    }
+    .card-inner {
+      transition: transform 0.4s;
+      transform-style: preserve-3d;
+    }
+    .card-inner.flipped {
+      transform: rotateY(180deg);
+    }
+    .card-front, .card-back {
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+    .card-back {
+      transform: rotateY(180deg);
     }
   </style>
 </head>
-<body class="bg-slate-100 font-sans w-screen flex flex-col overflow-hidden" style="height: 100dvh; min-height: -webkit-fill-available;">
+<body>
 
-  <!-- ENCABEZADO SUPERIOR / RECOMPENSAS -->
-  <header class="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-white p-3 flex justify-between items-center shadow-md shrink-0 z-10">
-    <div class="flex items-center space-x-2">
-      <button onclick="speakText('¡Hola Paola campeona! Elige una actividad abajo para empezar a jugar.')" class="bg-white/20 p-2 rounded-full active:scale-95 transition">
-        <span class="text-2xl">👑</span>
-      </button>
-      <div>
-        <h1 class="font-black text-lg leading-none">Mundo Mágico de Paola</h1>
-        <p class="text-xs text-pink-100 font-medium">¡Bienvenida Paola! A jugar y crear</p>
+  <div id="app-container">
+
+    <!-- MODAL: PAUSA ACTIVA / RESUMEN DE SESIÓN -->
+    <div id="app-modal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-5">
+      <div class="bg-white rounded-3xl p-5 max-w-xs w-full text-center space-y-3 shadow-2xl border-4 border-pink-300 animate-pop">
+        <div id="modal-icon" class="text-6xl">🤸‍♀️</div>
+        <h3 id="modal-title" class="text-lg font-black text-pink-700"></h3>
+        <p id="modal-body" class="text-sm font-bold text-slate-600 leading-snug"></p>
+        <div id="modal-buttons" class="flex flex-col space-y-2 pt-1"></div>
       </div>
     </div>
 
-    <!-- Contador de Estrellas -->
-    <div class="bg-yellow-400 text-yellow-950 px-3 py-1 rounded-full font-black text-lg flex items-center shadow-inner space-x-1 border-2 border-yellow-200">
-      <span>⭐</span>
-      <span id="star-count">0</span>
-    </div>
-  </header>
+    <!-- ENCABEZADO SUPERIOR CON ESTRELLAS Y AUDIO -->
+    <header class="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-white px-4 py-2 flex justify-between items-center shadow-md shrink-0 border-b border-pink-400/30 z-20">
+      <div class="flex items-center space-x-2">
+        <button onclick="speakText('¡Hola Paola! ¿Qué quieres jugar hoy?')" class="bg-white/20 hover:bg-white/30 p-2 rounded-2xl active:scale-95 transition text-2xl" title="Hablar">
+          👑
+        </button>
+        <div>
+          <h1 class="font-black text-lg leading-tight tracking-wide">El Mundo de Paola</h1>
+          <p class="text-[11px] text-pink-100 font-semibold leading-none">¡Aprende, Juega y Crea!</p>
+        </div>
+      </div>
 
-  <!-- CONTENEDOR PRINCIPAL DE PANTALLAS -->
-  <main class="flex-1 relative overflow-hidden bg-slate-50 min-h-0">
-    
-    <!-- ==================== 1. MÓDULO LIENZO DE DIBUJO ==================== -->
-    <section id="tab-art" class="tab-content absolute inset-0 flex flex-col p-2 space-y-2">
+      <div class="flex items-center space-x-1.5">
+        <button onclick="showSessionSummary()" class="bg-white/20 hover:bg-white/30 p-2 rounded-2xl active:scale-95 transition text-lg" title="Terminar por hoy">
+          🌙
+        </button>
+        <div class="bg-yellow-400 text-yellow-950 px-3.5 py-1 rounded-full font-black text-lg flex items-center shadow-md space-x-1 border-2 border-yellow-200" id="star-badge">
+          <span>⭐</span>
+          <span id="star-count">0</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- ÁREA DE CONTENIDO DE PESTAÑAS -->
+    <main id="main-content">
       
-      <!-- Barra de herramientas superior -->
-      <div class="bg-white p-2 rounded-2xl shadow flex items-center justify-between gap-2 overflow-x-auto shrink-0 border border-pink-100 no-scrollbar">
-        <!-- Paleta de Colores Ampliada para Paola -->
-        <div class="flex items-center space-x-1.5 shrink-0">
-          <button onclick="setColor('#ef4444')" class="w-8 h-8 rounded-full bg-red-500 border-2 border-white shadow active:scale-90 shrink-0"></button>
-          <button onclick="setColor('#f97316')" class="w-8 h-8 rounded-full bg-orange-500 border-2 border-white shadow active:scale-90 shrink-0"></button>
-          <button onclick="setColor('#eab308')" class="w-8 h-8 rounded-full bg-yellow-500 border-2 border-white shadow active:scale-90 shrink-0"></button>
-          <button onclick="setColor('#22c55e')" class="w-8 h-8 rounded-full bg-green-500 border-2 border-white shadow active:scale-90 shrink-0"></button>
+      <!-- PESTAÑA 1: ARTE Y DIBUJO -->
+      <section id="tab-art" class="tab-content active p-3 space-y-2">
+        <div class="bg-white p-2 rounded-2xl shadow-sm flex items-center gap-2 overflow-x-auto no-scrollbar shrink-0 border border-pink-100">
+          <div class="flex items-center space-x-2 shrink-0">
+            <button onclick="setColor('#ef4444')" class="w-8 h-8 rounded-full bg-red-500 border-2 border-white shadow-sm active:scale-90 ring-2 ring-red-300"></button>
+            <button onclick="setColor('#f97316')" class="w-8 h-8 rounded-full bg-orange-500 border-2 border-white shadow-sm active:scale-90"></button>
+            <button onclick="setColor('#eab308')" class="w-8 h-8 rounded-full bg-yellow-500 border-2 border-white shadow-sm active:scale-90"></button>
+            <button onclick="setColor('#22c55e')" class="w-8 h-8 rounded-full bg-green-500 border-2 border-white shadow-sm active:scale-90"></button>
+            <button onclick="setColor('#06b6d4')" class="w-8 h-8 rounded-full bg-cyan-500 border-2 border-white shadow-sm active:scale-90"></button>
+            <button onclick="setColor('#3b82f6')" class="w-8 h-8 rounded-full bg-blue-500 border-2 border-white shadow-sm active:scale-90"></button>
+            <button onclick="setColor('#a855f7')" class="w-8 h-8 rounded-full bg-purple-500 border-2 border-white shadow-sm active:scale-90"></button>
+            <button onclick="setColor('#ec4899')" class="w-8 h-8 rounded-full bg-pink-500 border-2 border-white shadow-sm active:scale-90"></button>
+            <button onclick="setColor('#78350f')" class="w-8 h-8 rounded-full bg-amber-900 border-2 border-white shadow-sm active:scale-90"></button>
+            <button onclick="setColor('#0f172a')" class="w-8 h-8 rounded-full bg-slate-900 border-2 border-white shadow-sm active:scale-90"></button>
+            <button onclick="setColor('#ffffff')" class="w-8 h-8 rounded-full bg-white border-2 border-slate-300 shadow-sm active:scale-90 text-xs flex items-center justify-center" title="Borrador">🧽</button>
+          </div>
+          <div class="h-6 w-px bg-slate-200 shrink-0"></div>
+          <div class="flex items-center space-x-1 shrink-0" id="stamp-bar">
+            <!-- Sellos inyectados por JS: base + desbloqueables -->
+            <button onclick="clearPaintCanvas()" id="btn-clear-canvas" class="p-2 bg-red-100 text-red-600 rounded-xl font-bold text-xs flex items-center space-x-1 active:scale-95 shrink-0">
+              <span>🗑️ Limpiar</span>
+            </button>
+          </div>
+        </div>
+        <div class="canvas-container rounded-3xl shadow-inner border-4 border-pink-200">
+          <canvas id="paintCanvas"></canvas>
+        </div>
+      </section>
 
-          <button onclick="setColor('#14b8a6')" class="w-8 h-8 rounded-full bg-teal-500 border-2 border-white shadow active:scale-90 shrink-0"></button>
-          <button onclick="setColor('#3b82f6')" class="w-8 h-8 rounded-full bg-blue-500 border-2 border-white shadow active:scale-90 shrink-0"></button>
-          <button onclick="setColor('#8b5cf6')" class="w-8 h-8 rounded-full bg-purple-500 border-2 border-white shadow active:scale-90 shrink-0"></button>
-          <button onclick="setColor('#ec4899')" class="w-8 h-8 rounded-full bg-pink-500 border-2 border-white shadow active:scale-90 shrink-0"></button>
+      <!-- PESTAÑA 2: RETOS DE MOVIMIENTO -->
+      <section id="tab-motion" class="tab-content p-4 justify-between items-center text-center">
+        <div class="w-full max-w-md bg-gradient-to-br from-amber-400 to-orange-500 rounded-3xl p-6 text-white shadow-lg border-4 border-orange-200 flex flex-col items-center justify-center space-y-4 my-auto">
+          <div class="bg-white/20 p-5 rounded-full text-7xl animate-bounce" id="challenge-icon">🤸‍♀️</div>
+          <h2 class="text-2xl font-black" id="challenge-title">¡Reto de Gimnasia!</h2>
+          <p class="text-lg font-bold text-orange-100 leading-snug" id="challenge-desc">Haz 5 saltos gigantes de rana</p>
+          <button onclick="readCurrentChallenge()" class="bg-white text-orange-600 px-6 py-2.5 rounded-full font-black text-sm shadow-md flex items-center space-x-2 active:scale-95 transition">
+            <span>🔊 Escuchar Reto</span>
+          </button>
+        </div>
+        <div class="w-full max-w-xs space-y-3 pb-2 shrink-0">
+          <button onclick="nextChallenge()" class="w-full bg-yellow-400 text-yellow-950 font-black text-base py-3 rounded-2xl shadow active:scale-95">🎲 Cambiar Reto</button>
+          <button onclick="completeChallenge()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xl py-4 rounded-2xl shadow-lg border-b-4 border-emerald-700 active:scale-95 transition">¡LO HICE PAOLA! 🎉</button>
+        </div>
+      </section>
 
-          <button onclick="setColor('#78350f')" class="w-8 h-8 rounded-full bg-amber-900 border-2 border-white shadow active:scale-90 shrink-0"></button>
-          <button onclick="setColor('#0f172a')" class="w-8 h-8 rounded-full bg-slate-900 border-2 border-white shadow active:scale-90 shrink-0"></button>
+      <!-- PESTAÑA 3: ROBOT STEM MEJORADO -->
+      <section id="tab-robot" class="tab-content p-3 space-y-2">
+        <!-- Encabezado del Robot -->
+        <div class="bg-indigo-900 text-white p-2.5 rounded-2xl shadow-md border-2 border-indigo-400 flex justify-between items-center shrink-0">
+          <div class="flex items-center space-x-2">
+            <span class="text-2xl">🤖</span>
+            <div>
+              <h2 class="text-sm font-black text-indigo-100">Laboratorio de Robi</h2>
+              <p id="robot-status-text" class="text-[11px] text-yellow-300 font-bold leading-none">¡Lleva a Robi hasta las estrellas!</p>
+            </div>
+          </div>
+          <button onclick="resetRobotGrid()" class="bg-indigo-700 hover:bg-indigo-600 text-xs px-2.5 py-1 rounded-xl font-bold border border-indigo-400 active:scale-95">
+            ⭐ Nuevas Estrellas
+          </button>
         </div>
 
-        <div class="h-6 w-px bg-slate-200 shrink-0"></div>
-
-        <!-- Sellos Mágicos (Incluye Corazón para Paola) -->
-        <div class="flex items-center space-x-1 overflow-x-auto no-scrollbar shrink-0">
-          <button onclick="setStamp('💖')" title="Corazón" class="px-2 py-1 bg-pink-100 text-pink-700 rounded-xl text-xl font-bold shadow-sm active:scale-90 shrink-0">💖</button>
-          <button onclick="setStamp('⭐')" title="Estrella" class="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-xl text-xl font-bold shadow-sm active:scale-90 shrink-0">⭐</button>
-          <button onclick="setStamp('🦄')" title="Unicornio" class="px-2 py-1 bg-purple-100 text-purple-700 rounded-xl text-xl font-bold shadow-sm active:scale-90 shrink-0">🦄</button>
-          <button onclick="setStamp('🌸')" title="Flor" class="px-2 py-1 bg-rose-100 text-rose-700 rounded-xl text-xl font-bold shadow-sm active:scale-90 shrink-0">🌸</button>
-          <button onclick="setStamp('🦋')" title="Mariposa" class="px-2 py-1 bg-blue-100 text-blue-700 rounded-xl text-xl font-bold shadow-sm active:scale-90 shrink-0">🦋</button>
-          <button onclick="setStamp('👑')" title="Corona" class="px-2 py-1 bg-amber-100 text-amber-700 rounded-xl text-xl font-bold shadow-sm active:scale-90 shrink-0">👑</button>
-          <button onclick="setStamp('🌈')" title="Arcoíris" class="px-2 py-1 bg-indigo-100 text-indigo-700 rounded-xl text-xl font-bold shadow-sm active:scale-90 shrink-0">🌈</button>
+        <!-- ESCENARIO DEL ROBOT (TABLERO 4x4) -->
+        <div class="bg-slate-900 rounded-3xl p-3 border-4 border-indigo-400 shadow-lg flex-1 flex flex-col justify-center items-center relative overflow-hidden min-h-[220px]">
           
-          <button onclick="clearCanvas()" title="Borrar" class="p-2 bg-red-100 text-red-600 rounded-xl font-bold text-xs flex items-center space-x-1 active:scale-90 shrink-0">
-            <i data-lucide="trash-2" class="w-5 h-5"></i>
-          </button>
+          <!-- Matriz del Tablero Grid 4x4 -->
+          <div id="robot-grid" class="grid grid-cols-4 grid-rows-4 gap-1.5 w-full max-w-[280px] aspect-square relative bg-slate-800/90 p-2 rounded-2xl border-2 border-indigo-500/50 shadow-inner my-auto">
+            
+            <!-- Casillas de Fondo del Grid -->
+            <div class="bg-slate-700/40 rounded-xl border border-slate-600/30 flex items-center justify-center" id="cell-0-0"></div>
+            <div class="bg-slate-700/40 rounded-xl border border-slate-600/30 flex items-center justify-center" id="cell-1-0"></div>
+            <div class="bg-slate-700/40 rounded-xl border border-slate-600/30 flex items-center justify-center" id="cell-2-0"></div>
+            <div class="bg-slate-700/40 rounded-xl border border-slate-600/30 flex items-center justify-center" id="cell-3-0"></div>
+            
+            <div class="bg-slate-700/40 rounded-xl border border-slate-600/30 flex items-center justify-center" id="cell-0-1"></div>
+            <div class="bg-slate-700/40 rounded-xl border border-slate-600/30 flex items-center justify-center" id="cell-1-1"></div>
+            <div class="bg-slate-700/40 rounded-xl border border-slate-600/30 flex items-center justify-center" id="cell-2-1"></div>
+            <div class="bg-slate-700/40 rounded-xl border border-slate-600/30 flex items-center justify-center" id="cell-3-1"></div>
+
+            <div class="bg-slate-700/40 rounded-xl border border-slate-600/30 flex items-center justify-center" id="cell-0-2"></div>
+            <div class="bg-slate-700/40 rounded-xl border border-slate-600/30 flex items-center justify-center" id="cell-1-2"></div>
+            <div class="bg-slate-700/40 rounded-xl border border-slate-600/30 flex items-center justify-center" id="cell-2-2"></div>
+            <div class="bg-slate-700/40 rounded-xl border border-slate-600/30 flex items-center justify-center" id="cell-3-2"></div>
+
+            <div class="bg-slate-700/40 rounded-xl border border-slate-600/30 flex items-center justify-center" id="cell-0-3"></div>
+            <div class="bg-slate-700/40 rounded-xl border border-slate-600/30 flex items-center justify-center" id="cell-1-3"></div>
+            <div class="bg-slate-700/40 rounded-xl border border-slate-600/30 flex items-center justify-center" id="cell-2-3"></div>
+            <div class="bg-slate-700/40 rounded-xl border border-slate-600/30 flex items-center justify-center" id="cell-3-3"></div>
+
+            <!-- ROBOT CUERPO COMPLETO DINÁMICO -->
+            <div id="robot-sprite" class="absolute w-[22%] h-[22%] transition-all duration-500 ease-in-out flex items-center justify-center z-20 pointer-events-none" style="top: 75%; left: 3%;">
+              <svg id="robot-svg" viewBox="0 0 100 110" class="w-full h-full drop-shadow-md">
+                <line x1="50" y1="20" x2="50" y2="8" stroke="#cbd5e1" stroke-width="4" stroke-linecap="round"/>
+                <circle id="robot-antenna-light" cx="50" cy="6" r="6" fill="#f59e0b" class="animate-pulse"/>
+                <rect x="20" y="20" width="60" height="38" rx="12" fill="#ec4899" id="robot-body-head" stroke="#ffffff" stroke-width="3"/>
+                <rect x="28" y="26" width="44" height="26" rx="8" fill="#0f172a"/>
+                <text x="50" y="44" text-anchor="middle" font-size="18" id="robot-face-expression">😄</text>
+                <path id="robot-arm-l" d="M14,60 Q4,72 12,82" stroke="#ec4899" stroke-width="7" stroke-linecap="round" fill="none"/>
+                <path id="robot-arm-r" d="M86,60 Q96,72 88,82" stroke="#ec4899" stroke-width="7" stroke-linecap="round" fill="none"/>
+                <rect x="25" y="56" width="50" height="40" rx="12" fill="#ec4899" id="robot-body-chest" stroke="#ffffff" stroke-width="3"/>
+                <circle cx="50" cy="74" r="10" fill="#ffffff"/>
+                <text x="50" y="79" text-anchor="middle" font-size="12">💖</text>
+                <circle cx="35" cy="100" r="8" fill="#334155" stroke="#94a3b8" stroke-width="2"/>
+                <circle cx="65" cy="100" r="8" fill="#334155" stroke="#94a3b8" stroke-width="2"/>
+              </svg>
+            </div>
+
+          </div>
         </div>
-      </div>
 
-      <!-- Área de Dibujo Canvas -->
-      <div class="flex-1 bg-white rounded-3xl shadow-inner border-4 border-pink-200 relative overflow-hidden canvas-container min-h-0">
-        <canvas id="paintCanvas" class="w-full h-full block cursor-crosshair"></canvas>
-      </div>
-    </section>
-
-    <!-- ==================== 2. MÓDULO RETOS DE MOVIMIENTO ==================== -->
-    <section id="tab-motion" class="tab-content absolute inset-0 hidden flex-col p-4 justify-between items-center text-center overflow-y-auto no-scrollbar">
-      
-      <div class="w-full bg-gradient-to-br from-amber-400 via-orange-500 to-pink-500 rounded-3xl p-5 text-white shadow-lg border-4 border-orange-200 flex flex-col items-center justify-center space-y-3">
-        
-        <div class="bg-white/20 p-4 rounded-full text-6xl animate-bounce" id="challenge-icon">
-          🤸‍♀️
+        <!-- TIRA DE SECUENCIA DE COMANDOS PROGRAMADOS -->
+        <div class="bg-slate-900/90 p-2 rounded-2xl border border-indigo-300/40 flex items-center justify-between gap-2 overflow-x-auto no-scrollbar shrink-0 min-h-[50px]" id="command-sequence">
+          <span class="text-slate-400 text-xs italic px-2">Toca las funciones abajo para programar a Robi...</span>
         </div>
 
-        <h2 class="text-2xl font-black" id="challenge-title">¡Misión de Gimnasta!</h2>
-        <p class="text-lg font-bold text-orange-100" id="challenge-desc">¡Haz 5 saltos gigantes de rana en tu lugar Paola!</p>
+        <!-- PANEL DE FUNCIONES DEL ROBOT -->
+        <div class="bg-white p-2.5 rounded-3xl shadow-md border border-indigo-100 space-y-2 shrink-0">
+          <div class="grid grid-cols-4 gap-1.5">
+            <button onclick="addRobotCommand('⬆️', 'Avanzar')" class="bg-indigo-500 hover:bg-indigo-600 text-white py-2 px-1 rounded-2xl font-black text-sm shadow flex flex-col items-center justify-center active:scale-90">
+              <span class="text-xl">⬆️</span>
+              <span class="text-[9px]">Avanzar</span>
+            </button>
+            <button onclick="addRobotCommand('↩️', 'Girar Izquierda')" class="bg-indigo-500 hover:bg-indigo-600 text-white py-2 px-1 rounded-2xl font-black text-sm shadow flex flex-col items-center justify-center active:scale-90">
+              <span class="text-xl">↩️</span>
+              <span class="text-[9px]">Girar Izq.</span>
+            </button>
+            <button onclick="addRobotCommand('↪️', 'Girar Derecha')" class="bg-indigo-500 hover:bg-indigo-600 text-white py-2 px-1 rounded-2xl font-black text-sm shadow flex flex-col items-center justify-center active:scale-90">
+              <span class="text-xl">↪️</span>
+              <span class="text-[9px]">Girar Der.</span>
+            </button>
+            <button onclick="addRobotCommand('🤸', 'Salto de Gimnasta')" class="bg-pink-500 hover:bg-pink-600 text-white py-2 px-1 rounded-2xl font-black text-sm shadow flex flex-col items-center justify-center active:scale-90">
+              <span class="text-xl">🤸</span>
+              <span class="text-[9px]">Salto</span>
+            </button>
 
-        <!-- Botones de Acción -->
-        <div class="flex flex-wrap justify-center gap-2">
-          <button onclick="readCurrentChallenge()" class="bg-white text-orange-600 px-5 py-2.5 rounded-full font-black text-base shadow-md flex items-center space-x-2 active:scale-95">
-            <span class="text-xl">🔊</span>
-            <span>Escuchar Reto</span>
-          </button>
-          <button onclick="nextRandomChallenge()" class="bg-amber-900/30 text-white border border-white/40 px-4 py-2.5 rounded-full font-bold text-sm shadow flex items-center space-x-1 active:scale-95">
-            <span>🎲 Cambiar Reto</span>
-          </button>
+            <button onclick="addRobotCommand('💃', 'Baile Mágico')" class="bg-purple-500 hover:bg-purple-600 text-white py-2 px-1 rounded-2xl font-black text-sm shadow flex flex-col items-center justify-center active:scale-90">
+              <span class="text-xl">💃</span>
+              <span class="text-[9px]">Baile</span>
+            </button>
+            <button onclick="addRobotCommand('🎨', 'Cambiar Color')" class="bg-cyan-500 hover:bg-cyan-600 text-white py-2 px-1 rounded-2xl font-black text-sm shadow flex flex-col items-center justify-center active:scale-90">
+              <span class="text-xl">🎨</span>
+              <span class="text-[9px]">Color</span>
+            </button>
+            <button onclick="addRobotCommand('💖', 'Saludo Real')" class="bg-amber-500 hover:bg-amber-600 text-white py-2 px-1 rounded-2xl font-black text-sm shadow flex flex-col items-center justify-center active:scale-90">
+              <span class="text-xl">💖</span>
+              <span class="text-[9px]">Saludo</span>
+            </button>
+            <button onclick="clearRobotCommands()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 py-2 px-1 rounded-2xl font-bold text-xs flex flex-col items-center justify-center active:scale-90">
+              <span class="text-xl">🗑️</span>
+              <span class="text-[9px]">Borrar</span>
+            </button>
+          </div>
+
+          <div class="pt-1">
+            <button onclick="runRobotSequence()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white py-3 rounded-2xl font-black text-base shadow-md border-b-4 border-emerald-700 active:scale-95 transition flex items-center justify-center space-x-2">
+              <span>🚀 ¡EJECUTAR PROGRAMA!</span>
+            </button>
+          </div>
         </div>
-      </div>
+      </section>
 
-      <!-- Botón de Cumplido / Siguiente -->
-      <button onclick="completeChallenge()" class="w-full max-w-xs my-2 bg-emerald-500 text-white font-black text-xl py-4 rounded-2xl shadow-lg border-b-4 border-emerald-700 active:scale-95 flex items-center justify-center space-x-2 shrink-0">
-        <span>¡LO HICISTE PAOLA!</span>
-        <span class="text-2xl">🎉</span>
+      <!-- PESTAÑA 4: MULTI-PUZZLES Y JUEGO DE MEMORIA -->
+      <section id="tab-puzzle" class="tab-content p-3 space-y-3">
+        <!-- Selector de Sub-juegos de Puzzle -->
+        <div class="flex justify-center space-x-2 bg-white p-1.5 rounded-2xl shadow-sm border border-purple-100 shrink-0">
+          <button onclick="switchPuzzleSubmode('memory')" id="btn-sub-memory" class="px-3 py-1.5 rounded-xl text-xs font-black bg-indigo-600 text-white shadow-sm">🧠 Memoria</button>
+          <button onclick="switchPuzzleSubmode('shadow')" id="btn-sub-shadow" class="px-3 py-1.5 rounded-xl text-xs font-black bg-slate-100 text-slate-600">👤 Sombras</button>
+        </div>
+
+        <!-- SUB-MODO 1: JUEGO DE MEMORIA (CARD MATCH) CON NIVELES -->
+        <div id="puzzle-mode-memory" class="flex-1 flex flex-col justify-between items-center text-center space-y-2">
+          <div class="bg-indigo-50 p-2.5 rounded-2xl border-2 border-indigo-200 w-full max-w-md shrink-0 space-y-2">
+            <div class="flex justify-between items-center">
+              <div>
+                <span class="text-[10px] font-bold text-indigo-600 uppercase tracking-wide">Juego de Memoria</span>
+                <h3 class="text-sm font-black text-indigo-900">Encuentra las parejas mágicas</h3>
+              </div>
+              <button onclick="initMemoryGame()" class="bg-indigo-500 text-white px-3 py-1.5 rounded-xl text-xs font-bold active:scale-95">🔄 Reiniciar</button>
+            </div>
+            <div class="flex justify-center space-x-1.5">
+              <button onclick="setMemoryLevel('facil')" id="btn-lvl-facil" class="px-3 py-1 rounded-xl text-xs font-black bg-indigo-500 text-white shadow-sm">🟢 Fácil</button>
+              <button onclick="setMemoryLevel('medio')" id="btn-lvl-medio" class="px-3 py-1 rounded-xl text-xs font-black bg-slate-100 text-slate-600">🟡 Medio</button>
+              <button onclick="setMemoryLevel('dificil')" id="btn-lvl-dificil" class="px-3 py-1 rounded-xl text-xs font-black bg-slate-100 text-slate-600">🔴 Difícil</button>
+            </div>
+          </div>
+          <div id="memory-grid" class="grid grid-cols-3 gap-2.5 bg-indigo-100 p-3 rounded-3xl border-4 border-indigo-200 w-full max-w-sm my-auto">
+            <!-- Tarjetas JS -->
+          </div>
+        </div>
+
+        <!-- SUB-MODO 2: ADIVINA LA SOMBRA -->
+        <div id="puzzle-mode-shadow" class="flex-1 flex flex-col justify-between items-center text-center hidden">
+          <div class="bg-purple-50 rounded-3xl p-4 w-full max-w-md flex-1 flex flex-col justify-around items-center border-4 border-purple-200 my-auto shadow-sm">
+            <h2 class="text-lg font-black text-purple-800">¿De quién es esta sombra?</h2>
+            <div id="puzzle-target" class="text-8xl p-5 bg-purple-200/50 rounded-3xl border-4 border-dashed border-purple-400 my-2 grayscale brightness-0 transition-all duration-500">❓</div>
+            <button onclick="readPuzzlePrompt()" class="text-purple-700 bg-purple-100 hover:bg-purple-200 px-4 py-1.5 rounded-full font-bold text-xs flex items-center space-x-1">
+              <span>🔊 Escuchar pregunta</span>
+            </button>
+          </div>
+          <div class="grid grid-cols-2 gap-3 w-full max-w-md pt-2 shrink-0" id="puzzle-options">
+          </div>
+        </div>
+      </section>
+
+      <!-- PESTAÑA 5: SUMAS Y CONTEO -->
+      <section id="tab-math" class="tab-content p-3 space-y-2">
+        <div class="flex justify-center space-x-2 bg-white p-1 rounded-2xl shadow-sm border border-emerald-100 shrink-0">
+          <button onclick="setMathMode('sum')" id="btn-mode-sum" class="px-4 py-1.5 rounded-xl text-xs font-black bg-emerald-500 text-white shadow-sm">➕ Sumas</button>
+          <button onclick="setMathMode('sub')" id="btn-mode-sub" class="px-4 py-1.5 rounded-xl text-xs font-black bg-slate-100 text-slate-600">➖ Restas</button>
+        </div>
+        <div class="bg-emerald-50 rounded-3xl p-5 w-full max-w-md flex-1 flex flex-col justify-around items-center border-4 border-emerald-200 my-auto shadow-sm">
+          <p class="text-xs font-black text-emerald-600 uppercase tracking-widest" id="math-mode-label">Cuenta con Paola</p>
+          <div id="math-visual" class="flex items-center justify-center space-x-2 text-4xl bg-white p-4 rounded-2xl shadow-sm border border-emerald-100 w-full overflow-x-auto my-2">
+          </div>
+          <p id="math-question-text" class="text-base font-black text-emerald-900">¿Cuántos hay en total?</p>
+          <button onclick="readMathQuestion()" class="bg-emerald-200 text-emerald-800 px-4 py-1.5 rounded-full font-bold text-xs">🔊 Escuchar suma</button>
+        </div>
+        <div class="grid grid-cols-3 gap-3 w-full max-w-md pt-3 shrink-0" id="math-options">
+        </div>
+      </section>
+
+      <!-- PESTAÑA 6: LENGUAJE: ABECEDARIO Y ARMAR PALABRAS -->
+      <section id="tab-read" class="tab-content p-3 space-y-2">
+        <!-- Selector de Sub-modos de Letras -->
+        <div class="flex justify-center space-x-2 bg-white p-1 rounded-2xl shadow-sm border border-pink-100 shrink-0">
+          <button onclick="switchReadSubmode('words')" id="btn-sub-words" class="px-3 py-1.5 rounded-xl text-xs font-black bg-pink-500 text-white shadow-sm">🔤 Armar Palabras</button>
+          <button onclick="switchReadSubmode('alphabet')" id="btn-sub-alphabet" class="px-3 py-1.5 rounded-xl text-xs font-black bg-slate-100 text-slate-600">🅰️ Abecedario A-Z</button>
+        </div>
+
+        <!-- SUB-MODO 1: ARMAR PALABRAS -->
+        <div id="read-mode-words" class="flex-1 flex flex-col justify-between items-center text-center space-y-2">
+          <div class="bg-pink-50 p-4 rounded-3xl border-4 border-pink-200 w-full max-w-md my-auto flex flex-col items-center space-y-3">
+            <div id="word-target-icon" class="text-7xl p-3 bg-white rounded-3xl shadow-md border-2 border-pink-100 animate-pop">👸</div>
+            <h2 id="word-target-hint" class="text-lg font-black text-pink-700">PRINCESA</h2>
+            
+            <!-- Casillas de la palabra -->
+            <div id="word-slots-container" class="flex items-center justify-center gap-1.5 flex-wrap min-h-[50px] my-2">
+            </div>
+
+            <div class="flex items-center justify-center gap-2 flex-wrap">
+              <button onclick="speakWordTarget()" class="bg-pink-100 text-pink-800 px-4 py-1 rounded-full font-bold text-xs flex items-center space-x-1">
+                <span>🔊 Escuchar palabra</span>
+              </button>
+              <button onclick="speakPartialWord()" id="btn-speak-partial" class="bg-purple-100 text-purple-800 px-4 py-1 rounded-full font-bold text-xs flex items-center space-x-1">
+                <span>🗣️ Escuchar mi avance</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Opciones de letras desordenadas -->
+          <div class="bg-white p-3 rounded-3xl shadow-md border border-pink-100 w-full max-w-md shrink-0 space-y-2">
+            <p class="text-xs font-bold text-pink-500">Toca las letras en orden para construir la palabra:</p>
+            <div id="word-bubbles-container" class="flex items-center justify-center gap-2 flex-wrap min-h-[50px]">
+            </div>
+            <button onclick="nextWordChallenge()" class="text-xs text-pink-600 font-bold underline pt-1 block mx-auto">Cambiar palabra 🎲</button>
+          </div>
+        </div>
+
+        <!-- SUB-MODO 2: ABECEDARIO COMPLETO Y TRAZO -->
+        <div id="read-mode-alphabet" class="flex-1 flex flex-col space-y-2 hidden">
+          <!-- Carrusel de Abecedario A-Z -->
+          <div class="bg-white p-2 rounded-2xl shadow-sm border border-pink-100 flex items-center space-x-2 overflow-x-auto no-scrollbar shrink-0" id="alphabet-carousel">
+            <!-- Inyectado dinámicamente por JS A-Z -->
+          </div>
+
+          <div class="bg-pink-50 p-2 rounded-2xl border border-pink-200 flex justify-between items-center shrink-0">
+            <div>
+              <span class="text-[10px] font-bold text-pink-500 uppercase tracking-wide">Trazo y Fonética</span>
+              <h2 id="letter-title" class="text-base font-black text-pink-700">P de Princesa y Paola</h2>
+            </div>
+            <button onclick="readLetterSound()" class="bg-pink-500 text-white p-2 rounded-xl text-lg shadow active:scale-95">🔊</button>
+          </div>
+
+          <div class="canvas-container rounded-3xl border-4 border-dashed border-pink-300 relative flex items-center justify-center">
+            <span id="letter-trace-bg" class="absolute text-9xl font-black text-slate-200 select-none pointer-events-none">P</span>
+            <canvas id="letterCanvas" class="relative z-10"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- PESTAÑA 7: CUENTOS CORTOS HABLADOS -->
+      <section id="tab-stories" class="tab-content p-3 space-y-2">
+        <div id="story-picker" class="grid grid-cols-2 gap-2.5">
+          <!-- Tarjetas de cuentos, inyectadas por JS -->
+        </div>
+
+        <div id="story-reader" class="hidden flex-1 flex-col space-y-2">
+          <div class="flex items-center justify-between shrink-0">
+            <button onclick="closeStory()" class="bg-slate-100 text-slate-600 px-3 py-1.5 rounded-xl text-xs font-black active:scale-95">⬅️ Cuentos</button>
+            <div class="flex space-x-1" id="story-progress-dots"></div>
+          </div>
+
+          <div class="bg-amber-50 rounded-3xl p-5 flex-1 flex flex-col items-center justify-center text-center border-4 border-amber-200 space-y-3 my-auto">
+            <div id="story-icon" class="text-7xl">📖</div>
+            <p id="story-text" class="text-base font-bold text-amber-900 leading-snug"></p>
+          </div>
+
+          <div class="flex items-center justify-center gap-2 shrink-0">
+            <button onclick="speakStoryParagraph()" class="bg-amber-200 text-amber-900 px-4 py-2 rounded-full font-black text-xs">🔊 Escuchar</button>
+            <button onclick="nextStoryStep()" id="btn-story-next" class="bg-emerald-500 text-white px-5 py-2 rounded-full font-black text-xs shadow active:scale-95">Siguiente ➡️</button>
+          </div>
+
+          <div id="story-question-box" class="hidden bg-white p-3 rounded-2xl border-2 border-amber-200 shrink-0 space-y-2">
+            <p id="story-question-text" class="text-sm font-black text-amber-800 text-center"></p>
+            <div id="story-question-options" class="grid grid-cols-2 gap-2"></div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- BARRA DE NAVEGACIÓN INFERIOR -->
+    <nav class="bg-white border-t border-slate-200 grid grid-cols-7 shrink-0 shadow-lg text-center z-30">
+      <button onclick="switchTab('tab-art')" id="btn-tab-art" class="py-2 flex flex-col items-center justify-center text-pink-600 bg-pink-50 border-t-4 border-pink-500">
+        <span class="text-lg">🎨</span>
+        <span class="text-[9px] font-black leading-none mt-1">Arte</span>
       </button>
+      <button onclick="switchTab('tab-motion')" id="btn-tab-motion" class="py-2 flex flex-col items-center justify-center text-slate-500">
+        <span class="text-lg">🤸‍♀️</span>
+        <span class="text-[9px] font-black leading-none mt-1">Moverse</span>
+      </button>
+      <button onclick="switchTab('tab-robot')" id="btn-tab-robot" class="py-2 flex flex-col items-center justify-center text-slate-500">
+        <span class="text-lg">🤖</span>
+        <span class="text-[9px] font-black leading-none mt-1">Robot</span>
+      </button>
+      <button onclick="switchTab('tab-puzzle')" id="btn-tab-puzzle" class="py-2 flex flex-col items-center justify-center text-slate-500">
+        <span class="text-lg">🧩</span>
+        <span class="text-[9px] font-black leading-none mt-1">Puzzles</span>
+      </button>
+      <button onclick="switchTab('tab-math')" id="btn-tab-math" class="py-2 flex flex-col items-center justify-center text-slate-500">
+        <span class="text-lg">🔢</span>
+        <span class="text-[9px] font-black leading-none mt-1">Suma</span>
+      </button>
+      <button onclick="switchTab('tab-read')" id="btn-tab-read" class="py-2 flex flex-col items-center justify-center text-slate-500">
+        <span class="text-lg">🔤</span>
+        <span class="text-[9px] font-black leading-none mt-1">Palabras</span>
+      </button>
+      <button onclick="switchTab('tab-stories')" id="btn-tab-stories" class="py-2 flex flex-col items-center justify-center text-slate-500">
+        <span class="text-lg">📖</span>
+        <span class="text-[9px] font-black leading-none mt-1">Cuentos</span>
+      </button>
+    </nav>
 
-    </section>
+  </div>
 
-    <!-- ==================== 3. MÓDULO ROBOT LAB ==================== -->
-    <section id="tab-robot" class="tab-content absolute inset-0 hidden flex-col p-3 space-y-2">
-      
-      <!-- Tablero del Robot -->
-      <div class="bg-slate-800 rounded-3xl p-4 text-white flex-1 flex flex-col justify-between items-center relative overflow-hidden border-4 border-indigo-300">
-        
-        <!-- Estado del Robot -->
-        <div class="text-center">
-          <p class="text-xs text-indigo-300 font-bold uppercase tracking-wider">Laboratorio del Robot de Paola</p>
-          <p id="robot-status-text" class="text-sm font-bold text-yellow-400">Toca los botones de abajo para programar</p>
-        </div>
-
-        <!-- Avatar del Robot -->
-        <div id="robot-avatar" class="text-7xl transition-all duration-300 transform">
-          🤖
-        </div>
-
-        <!-- Secuencia de Bloques Programados -->
-        <div class="w-full bg-slate-900/60 p-2 rounded-xl flex items-center justify-center space-x-1.5 min-h-[52px] border border-slate-700 overflow-x-auto no-scrollbar" id="command-sequence">
-          <span class="text-slate-500 text-xs italic">Elige tus movimientos...</span>
-        </div>
-      </div>
-
-      <!-- Botones de Comandos Físicos -->
-      <div class="bg-white p-3 rounded-3xl shadow-md border border-indigo-100 space-y-2 shrink-0">
-        <p class="text-xs font-black text-slate-400 uppercase text-center">Controles del Robot</p>
-
-        <div class="grid grid-cols-3 sm:grid-cols-6 gap-2">
-          <button onclick="addRobotCommand('⬆️', 'Avanzar')" class="bg-indigo-500 text-white p-3 rounded-2xl font-black text-xl shadow active:scale-90 flex flex-col items-center justify-center">
-            <span>⬆️</span>
-            <span class="text-[10px] uppercase font-bold mt-0.5">Avanzar</span>
-          </button>
-          <button onclick="addRobotCommand('⬇️', 'Retroceder')" class="bg-blue-500 text-white p-3 rounded-2xl font-black text-xl shadow active:scale-90 flex flex-col items-center justify-center">
-            <span>⬇️</span>
-            <span class="text-[10px] uppercase font-bold mt-0.5">Atrás</span>
-          </button>
-          <button onclick="addRobotCommand('🌀', 'Girar')" class="bg-purple-500 text-white p-3 rounded-2xl font-black text-xl shadow active:scale-90 flex flex-col items-center justify-center">
-            <span>🌀</span>
-            <span class="text-[10px] uppercase font-bold mt-0.5">Girar</span>
-          </button>
-          <button onclick="addRobotCommand('🤸', 'Saltar')" class="bg-pink-500 text-white p-3 rounded-2xl font-black text-xl shadow active:scale-90 flex flex-col items-center justify-center">
-            <span>🤸</span>
-            <span class="text-[10px] uppercase font-bold mt-0.5">Saltar</span>
-          </button>
-          <button onclick="addRobotCommand('💖', 'Amor')" class="bg-rose-500 text-white p-3 rounded-2xl font-black text-xl shadow active:scale-90 flex flex-col items-center justify-center">
-            <span>💖</span>
-            <span class="text-[10px] uppercase font-bold mt-0.5">Cariño</span>
-          </button>
-          <button onclick="addRobotCommand('⚡', 'Súper Velocidad')" class="bg-amber-500 text-white p-3 rounded-2xl font-black text-xl shadow active:scale-90 flex flex-col items-center justify-center">
-            <span>⚡</span>
-            <span class="text-[10px] uppercase font-bold mt-0.5">Súper</span>
-          </button>
-        </div>
-
-        <!-- Botones de Acción del Robot -->
-        <div class="flex space-x-2 pt-1">
-          <button onclick="clearRobotCommands()" class="bg-slate-200 text-slate-700 px-4 py-2.5 rounded-xl font-bold text-xs active:scale-90 shrink-0">
-            Borrar
-          </button>
-          <button onclick="runRobotSequence()" class="flex-1 bg-emerald-500 text-white py-2.5 px-4 rounded-xl font-black text-sm shadow active:scale-95 text-center flex items-center justify-center space-x-2">
-            <span>¡INICIAR ROBOT!</span>
-            <span>🚀</span>
-          </button>
-        </div>
-      </div>
-
-    </section>
-
-  </main>
-
-  <!-- NAVEGACIÓN INFERIOR (TAB BAR FIJA CON SAFE-AREA PARA MÓVILES) -->
-  <nav class="bg-white border-t-2 border-pink-200 grid grid-cols-3 shrink-0 shadow-lg z-50 relative" style="padding-bottom: max(0.5rem, env(safe-area-inset-bottom));">
-    <button onclick="switchTab('tab-art')" id="btn-tab-art" class="py-2.5 flex flex-col items-center justify-center text-slate-500 tab-active">
-      <i data-lucide="palette" class="w-6 h-6 mb-0.5"></i>
-      <span class="text-xs font-black">Arte</span>
-    </button>
-
-    <button onclick="switchTab('tab-motion')" id="btn-tab-motion" class="py-2.5 flex flex-col items-center justify-center text-slate-500">
-      <i data-lucide="activity" class="w-6 h-6 mb-0.5"></i>
-      <span class="text-xs font-black">Moverse</span>
-    </button>
-
-    <button onclick="switchTab('tab-robot')" id="btn-tab-robot" class="py-2.5 flex flex-col items-center justify-center text-slate-500">
-      <i data-lucide="bot" class="w-6 h-6 mb-0.5"></i>
-      <span class="text-xs font-black">Robot</span>
-    </button>
-  </nav>
-
-  <!-- LÓGICA JAVASCRIPT -->
   <script>
-    // Inicializar Íconos Lucide
-    lucide.createIcons();
-
-    // Estado global de la App
+    // ESTADO GENERAL
     let stars = 0;
     let currentColor = '#ec4899';
     let currentStamp = null;
-    let isDrawing = false;
 
-    // --- SÍNTESIS DE VOZ (LECTORA PERSONALIZADA PARA PAOLA) ---
-    function speakText(text) {
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel(); // Cancelar anteriores
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'es-ES';
-        utterance.rate = 0.9; // Hablar despacio y claro
-        utterance.pitch = 1.15; // Tono alegre
-        window.speechSynthesis.speak(utterance);
-      }
+    // --- PROGRESO GUARDADO (localStorage, sin nube ni datos personales) ---
+    const PROGRESS_KEY = 'paolaAppProgress_v1';
+    let progressData = {
+      stars: 0,
+      mathTier: { sum: 1, sub: 1 },
+      mathStreak: { sum: 0, sub: 0 },
+      memoryLevel: 'facil',
+      wordIndex: 0
+    };
+
+    function loadProgress() {
+      try {
+        const raw = localStorage.getItem(PROGRESS_KEY);
+        if (raw) progressData = Object.assign(progressData, JSON.parse(raw));
+      } catch (e) { console.log('No se pudo cargar el progreso', e); }
+      stars = progressData.stars || 0;
+      const starEl = document.getElementById('star-count');
+      if (starEl) starEl.innerText = stars;
+      currentMemoryLevel = progressData.memoryLevel || 'facil';
     }
 
-    // --- NAVEGACIÓN ENTRE PESTAÑAS ---
-    function switchTab(tabId) {
-      // Ocultar todas las secciones
-      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-      document.querySelectorAll('nav button').forEach(el => el.classList.remove('tab-active'));
-
-      // Mostrar la seleccionada
-      document.getElementById(tabId).classList.remove('hidden');
-      document.getElementById('btn-' + tabId).classList.add('tab-active');
-
-      // Acciones específicas por pestaña
-      if (tabId === 'tab-art') {
-        speakText("¡Lienzo de Arte! Dibuja lo que quieras Paola.");
-        resizeCanvas();
-      } else if (tabId === 'tab-motion') {
-        speakText("¡Retos de movimiento! Prepárate Paola.");
-        readCurrentChallenge();
-      } else if (tabId === 'tab-robot') {
-        speakText("¡Laboratorio de Robot de Paola!");
-      }
+    function saveProgress() {
+      progressData.stars = stars;
+      try { localStorage.setItem(PROGRESS_KEY, JSON.stringify(progressData)); }
+      catch (e) { console.log('No se pudo guardar el progreso', e); }
     }
 
-    // --- LÓGICA DEL CANVA DE DIBUJO ---
-    const canvas = document.getElementById('paintCanvas');
-    const ctx = canvas.getContext('2d');
-
-    function resizeCanvas() {
-      const rect = canvas.parentElement.getBoundingClientRect();
-      canvas.width = rect.width;
-      canvas.height = rect.height;
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      ctx.lineWidth = 8;
-    }
-
-    function setColor(color) {
-      currentColor = color;
-      currentStamp = null;
-      speakText("Color cambiado");
-    }
-
-    function setStamp(stamp) {
-      currentStamp = stamp;
-      speakText("Sello mágico elegido");
-    }
-
-    function clearCanvas() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      speakText("Lienzo limpio Paola");
-    }
-
-    function startDrawing(e) {
-      isDrawing = true;
-      const pos = getPos(e);
-      
-      if (currentStamp) {
-        ctx.font = '42px serif';
-        ctx.fillText(currentStamp, pos.x - 20, pos.y + 15);
-        isDrawing = false;
-        return;
-      }
-
-      ctx.beginPath();
-      ctx.moveTo(pos.x, pos.y);
-      ctx.strokeStyle = currentColor;
-    }
-
-    function draw(e) {
-      if (!isDrawing || currentStamp) return;
-      const pos = getPos(e);
-      ctx.lineTo(pos.x, pos.y);
-      ctx.stroke();
-    }
-
-    function stopDrawing() {
-      isDrawing = false;
-    }
-
-    function getPos(e) {
-      const rect = canvas.getBoundingClientRect();
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-      return {
-        x: clientX - rect.left,
-        y: clientY - rect.top
-      };
-    }
-
-    // Eventos Canvas (Touch + Mouse)
-    canvas.addEventListener('mousedown', startDrawing);
-    canvas.addEventListener('mousemove', draw);
-    canvas.addEventListener('mouseup', stopDrawing);
-
-    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDrawing(e); });
-    canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e); });
-    canvas.addEventListener('touchend', stopDrawing);
-
-
-    // --- LÓGICA DE RETOS DE MOVIMIENTO AMPLIADA ---
-    const challenges = [
-      { icon: '🤸‍♀️', title: '¡Misión Gimnasta!', desc: '¡Paola, haz 5 saltos gigantes de rana en tu lugar!' },
-      { icon: '⚽', title: '¡Pase de Fútbol!', desc: 'Patea 3 pelotas imaginarias súper fuerte con el pie.' },
-      { icon: '💃', title: '¡Pausa de Baile!', desc: '¡Baila como una estrella de música por 10 segundos!' },
-      { icon: '🦒', title: '¡Reto de Equilibrio!', desc: 'Párate en un solo pie como un flamenco por 5 segundos.' },
-      { icon: '⭐', title: '¡Estiramiento Mágico!', desc: 'Toca las puntas de tus pies sin doblar las rodillas.' },
-      { icon: '✈️', title: '¡Vuelo de Avión!', desc: 'Abre tus brazos como un avión y gira 3 veces suavemente.' },
-      { icon: '👏', title: '¡Aplausos de Victoria!', desc: 'Da 5 aplausos fuertes arriba de tu cabeza.' },
-      { icon: '🦁', title: '¡Paso de Gigante!', desc: 'Da 4 pasos gigantescos de león por la habitación.' },
-      { icon: '👑', title: '¡Pose de Princesa!', desc: 'Ponte una corona imaginaria y haz una reverencia brillante.' },
-      { icon: '🐝', title: '¡Zumbido de Abeja!', desc: 'Corre en tu lugar muy rápido zumbando como una abejita.' }
+    // --- COLECCIÓN DE ESTAMPAS DESBLOQUEABLES ---
+    const stampCollection = [
+      { emoji: '💖', threshold: 0 },
+      { emoji: '🦄', threshold: 0 },
+      { emoji: '🦕', threshold: 0 },
+      { emoji: '⚽', threshold: 0 },
+      { emoji: '👑', threshold: 0 },
+      { emoji: '🤸‍♀️', threshold: 0 },
+      { emoji: '🦁', threshold: 0 },
+      { emoji: '🦋', threshold: 10 },
+      { emoji: '🐬', threshold: 20 },
+      { emoji: '🏆', threshold: 35 },
+      { emoji: '🦒', threshold: 50 }
     ];
+    let lastUnlockedCount = 0;
 
-    let currentChallengeIndex = 0;
+    function renderStampBar() {
+      const bar = document.getElementById('stamp-bar');
+      const trashBtn = document.getElementById('btn-clear-canvas');
+      if (!bar || !trashBtn) return;
+
+      bar.querySelectorAll('.stamp-btn').forEach(b => b.remove());
+      let unlockedNow = 0;
+
+      stampCollection.forEach(s => {
+        const unlocked = stars >= s.threshold;
+        if (unlocked) unlockedNow++;
+        const btn = document.createElement('button');
+        btn.className = unlocked
+          ? "stamp-btn p-1.5 bg-pink-50 hover:bg-pink-100 rounded-xl text-xl shadow-sm shrink-0"
+          : "stamp-btn p-1.5 bg-slate-100 rounded-xl text-xl shadow-sm shrink-0 opacity-60 relative";
+        if (unlocked) {
+          btn.innerText = s.emoji;
+          btn.onclick = () => setStamp(s.emoji);
+        } else {
+          btn.innerHTML = `<span class="grayscale">${s.emoji}</span><span class="absolute -top-1 -right-1 text-[9px]">🔒</span>`;
+          btn.onclick = () => speakText(`Consigue ${s.threshold} estrellas para desbloquear este sello`);
+        }
+        bar.insertBefore(btn, trashBtn);
+      });
+
+      if (unlockedNow > lastUnlockedCount && lastUnlockedCount > 0) {
+        speakText('¡Nuevo sello desbloqueado Paola!');
+      }
+      lastUnlockedCount = unlockedNow;
+    }
+
+    // --- SESIÓN Y TEMPORIZADOR AMABLE ---
+    let sessionStartTime = Date.now();
+    let sessionStars = 0;
+    let sessionActivities = new Set();
+    let lastMoveBreakTime = Date.now();
+    const MOVE_BREAK_MS = 20 * 60 * 1000; // 20 minutos
+    const SNOOZE_MS = 5 * 60 * 1000;
+
+    function showModal(icon, title, body, buttons) {
+      document.getElementById('modal-icon').innerText = icon;
+      document.getElementById('modal-title').innerText = title;
+      document.getElementById('modal-body').innerText = body;
+      const btnContainer = document.getElementById('modal-buttons');
+      btnContainer.innerHTML = '';
+      buttons.forEach(b => {
+        const btn = document.createElement('button');
+        btn.className = b.primary
+          ? "w-full bg-emerald-500 text-white font-black py-2.5 rounded-2xl active:scale-95"
+          : "w-full bg-slate-100 text-slate-600 font-bold py-2 rounded-2xl active:scale-95 text-sm";
+        btn.innerText = b.label;
+        btn.onclick = () => { closeModal(); b.action && b.action(); };
+        btnContainer.appendChild(btn);
+      });
+      document.getElementById('app-modal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('app-modal').classList.add('hidden');
+    }
+
+    function checkMoveBreak() {
+      if (Date.now() - lastMoveBreakTime >= MOVE_BREAK_MS) {
+        speakText('Paola, llevas un rato jugando. ¡Vamos a estirarnos un poco!');
+        showModal('🤸‍♀️', '¡Pausa activa!', 'Ya jugaste un buen rato. ¿Vamos a movernos unos minutos?', [
+          { label: '¡Vamos a movernos!', primary: true, action: () => { lastMoveBreakTime = Date.now(); switchTab('tab-motion'); } },
+          { label: '5 minutitos más', action: () => { lastMoveBreakTime = Date.now() - MOVE_BREAK_MS + SNOOZE_MS; } }
+        ]);
+      }
+    }
+    setInterval(checkMoveBreak, 60 * 1000);
+
+    function showSessionSummary() {
+      const minutes = Math.max(1, Math.round((Date.now() - sessionStartTime) / 60000));
+      const activities = [...sessionActivities].join(', ') || 'explorando la app';
+      const msg = `¡Hoy jugaste ${minutes} minutos y ganaste ${sessionStars} estrellas nuevas! Jugaste en: ${activities}.`;
+      speakText(`¡Buen trabajo Paola! Ganaste ${sessionStars} estrellas nuevas hoy. Nos vemos pronto.`);
+      showModal('🌙', '¡Buen trabajo hoy!', msg, [
+        { label: 'Seguir jugando', primary: true }
+      ]);
+    }
+
+    // SÍNTESIS DE VOZ INTERACTIVA Y ROBUSTA
+    function speakText(text) {
+      try {
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+          
+          // Re-activar contexto de audio si estaba congelado
+          if (window.speechSynthesis.paused) {
+            window.speechSynthesis.resume();
+          }
+
+          const utterance = new SpeechSynthesisUtterance(text);
+          utterance.lang = 'es-ES';
+          utterance.rate = 0.95;
+          utterance.pitch = 1.1;
+
+          const voices = window.speechSynthesis.getVoices();
+          const esVoice = voices.find(v => v.lang.startsWith('es'));
+          if (esVoice) utterance.voice = esVoice;
+
+          window.speechSynthesis.speak(utterance);
+        }
+      } catch (err) {
+        console.log("Audio no disponible:", err);
+      }
+    }
+
+    // Inicializar síntesis de voz al hacer el primer clic o toque
+    document.addEventListener('pointerdown', function unlockAudio() {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.resume();
+      }
+      document.removeEventListener('pointerdown', unlockAudio);
+    }, { once: true });
+
+    function addStar() {
+      stars++;
+      sessionStars++;
+      const el = document.getElementById('star-count');
+      const badge = document.getElementById('star-badge');
+      if (el) el.innerText = stars;
+      if (badge) {
+        badge.classList.remove('animate-star');
+        void badge.offsetWidth;
+        badge.classList.add('animate-star');
+      }
+      renderStampBar();
+      saveProgress();
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => {
+        el.classList.remove('active');
+        el.style.display = 'none';
+      });
+
+      document.querySelectorAll('nav button').forEach(el => {
+        el.className = "py-2 flex flex-col items-center justify-center text-slate-500";
+      });
+
+      const targetTab = document.getElementById(tabId);
+      const targetBtn = document.getElementById('btn-' + tabId);
+
+      if (targetTab) {
+        targetTab.classList.add('active');
+        targetTab.style.display = 'flex';
+      }
+
+      if (targetBtn) {
+        targetBtn.className = "py-2 flex flex-col items-center justify-center text-pink-600 bg-pink-50 border-t-4 border-pink-500";
+      }
+
+      const activityNames = {
+        'tab-art': 'Arte', 'tab-motion': 'Movimiento', 'tab-robot': 'Robot',
+        'tab-puzzle': 'Puzzles', 'tab-math': 'Matemáticas', 'tab-read': 'Palabras', 'tab-stories': 'Cuentos'
+      };
+      if (activityNames[tabId]) sessionActivities.add(activityNames[tabId]);
+
+      setTimeout(() => {
+        if (tabId === 'tab-art') {
+          resizePaintCanvas();
+          speakText("¡Dibuja lo que quieras Paola!");
+        } else if (tabId === 'tab-motion') {
+          readCurrentChallenge();
+        } else if (tabId === 'tab-robot') {
+          initRobotGrid();
+          speakText("Laboratorio del Robot de Paola");
+        } else if (tabId === 'tab-puzzle') {
+          switchPuzzleSubmode('memory');
+        } else if (tabId === 'tab-math') {
+          if (!mathAnswer) loadMathQuestion();
+          else readMathQuestion();
+        } else if (tabId === 'tab-read') {
+          switchReadSubmode('words');
+        } else if (tabId === 'tab-stories') {
+          renderStoryPicker();
+        }
+      }, 100);
+    }
+
+    // LIENZO DE DIBUJO
+    let paintCanvas, paintCtx;
+    let isDrawingPaint = false;
+
+    function initPaintCanvas() {
+      paintCanvas = document.getElementById('paintCanvas');
+      if (!paintCanvas) return;
+      paintCtx = paintCanvas.getContext('2d');
+
+      resizePaintCanvas();
+
+      paintCanvas.addEventListener('pointerdown', (e) => {
+        paintCanvas.setPointerCapture(e.pointerId);
+        const rect = paintCanvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        if (currentStamp) {
+          paintCtx.font = '48px serif';
+          paintCtx.textAlign = 'center';
+          paintCtx.textBaseline = 'middle';
+          paintCtx.fillText(currentStamp, x, y);
+          isDrawingPaint = false;
+          return;
+        }
+
+        isDrawingPaint = true;
+        paintCtx.beginPath();
+        paintCtx.moveTo(x, y);
+        paintCtx.strokeStyle = currentColor;
+        paintCtx.lineWidth = currentColor === '#ffffff' ? 24 : 10;
+        paintCtx.lineCap = 'round';
+        paintCtx.lineJoin = 'round';
+      });
+
+      paintCanvas.addEventListener('pointermove', (e) => {
+        if (!isDrawingPaint || currentStamp) return;
+        const rect = paintCanvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        paintCtx.lineTo(x, y);
+        paintCtx.stroke();
+      });
+
+      const stopDrawing = () => { isDrawingPaint = false; };
+      paintCanvas.addEventListener('pointerup', stopDrawing);
+      paintCanvas.addEventListener('pointercancel', stopDrawing);
+    }
+
+    function resizePaintCanvas() {
+      if (!paintCanvas || !paintCanvas.parentElement) return;
+      const rect = paintCanvas.parentElement.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        paintCanvas.width = rect.width;
+        paintCanvas.height = rect.height;
+      }
+    }
+
+    function setColor(c) {
+      currentColor = c;
+      currentStamp = null;
+    }
+
+    function setStamp(s) {
+      currentStamp = s;
+      speakText("Sello de " + s);
+    }
+
+    function clearPaintCanvas() {
+      if (!paintCanvas || !paintCtx) return;
+      paintCtx.clearRect(0, 0, paintCanvas.width, paintCanvas.height);
+      speakText("Lienzo limpio");
+    }
+
+    // RETOS DE MOVIMIENTO
+    const challenges = [
+      { icon: '🤸‍♀️', title: '¡Gimnasta Estrella!', desc: 'Haz 5 saltos de rana gigantes' },
+      { icon: '⚽', title: '¡Pase de Fútbol!', desc: 'Patea 3 pelotas imaginarias super fuerte' },
+      { icon: '🦕', title: '¡Camina como T-Rex!', desc: 'Da 4 pasos grandes de dinosaurio rugiendo' },
+      { icon: '👸', title: '¡Saludo Real!', desc: 'Haz una reverencia elegante de princesa' },
+      { icon: '🦁', title: '¡Rugido de León!', desc: 'Ruge como un león fuerte y feliz' },
+      { icon: '🦄', title: '¡Giro Unicornio!', desc: 'Da dos vueltas en tu lugar con los brazos arriba' }
+    ];
+    let chIdx = 0;
 
     function readCurrentChallenge() {
-      const ch = challenges[currentChallengeIndex];
-      speakText(`${ch.title}. ${ch.desc}`);
+      speakText(`${challenges[chIdx].title}. ${challenges[chIdx].desc}`);
     }
 
-    function nextRandomChallenge() {
-      let nextIndex = Math.floor(Math.random() * challenges.length);
-      if (nextIndex === currentChallengeIndex) {
-        nextIndex = (currentChallengeIndex + 1) % challenges.length;
-      }
-      currentChallengeIndex = nextIndex;
-      updateChallengeUI();
+    function nextChallenge() {
+      chIdx = (chIdx + 1) % challenges.length;
+      document.getElementById('challenge-icon').innerText = challenges[chIdx].icon;
+      document.getElementById('challenge-title').innerText = challenges[chIdx].title;
+      document.getElementById('challenge-desc').innerText = challenges[chIdx].desc;
       readCurrentChallenge();
     }
 
-    function updateChallengeUI() {
-      const ch = challenges[currentChallengeIndex];
-      document.getElementById('challenge-icon').innerText = ch.icon;
-      document.getElementById('challenge-title').innerText = ch.title;
-      document.getElementById('challenge-desc').innerText = ch.desc;
-    }
-
     function completeChallenge() {
-      stars += 1;
-      document.getElementById('star-count').innerText = stars;
-      speakText("¡Excelente trabajo Paola! Ganaste una estrella brillante.");
-      nextRandomChallenge();
+      addStar();
+      speakText("¡Muy bien Paola! Ganaste una estrella de oro");
+      nextChallenge();
     }
 
-    // --- LÓGICA AMPLIADA DEL ROBOT ---
-    let robotCommands = [];
+    // ESTADO DEL ROBOT Y GRID 4x4
+    let robotCmds = [];
+    let robotState = { x: 0, y: 3, dir: 0, colorIdx: 0, isRunning: false };
+    const robotColors = ['#ec4899', '#8b5cf6', '#06b6d4', '#f59e0b', '#10b981'];
+    let gridStars = [{ x: 1, y: 1 }, { x: 3, y: 0 }, { x: 2, y: 2 }];
+
+    function initRobotGrid() {
+      updateRobotSpritePosition();
+      renderGridStars();
+    }
+
+    function resetRobotGrid() {
+      gridStars = [
+        { x: Math.floor(Math.random() * 4), y: Math.floor(Math.random() * 3) },
+        { x: Math.floor(Math.random() * 4), y: Math.floor(Math.random() * 3) }
+      ];
+      robotState.x = 0;
+      robotState.y = 3;
+      robotState.dir = 0;
+      updateRobotSpritePosition();
+      renderGridStars();
+      speakText("¡Nuevas estrellas colocadas en el tablero!");
+    }
+
+    function renderGridStars() {
+      for (let x = 0; x < 4; x++) {
+        for (let y = 0; y < 4; y++) {
+          const cell = document.getElementById(`cell-${x}-${y}`);
+          if (cell) cell.innerHTML = '';
+        }
+      }
+      gridStars.forEach(s => {
+        const cell = document.getElementById(`cell-${s.x}-${s.y}`);
+        if (cell) {
+          cell.innerHTML = '<span class="text-2xl animate-bounce">⭐</span>';
+        }
+      });
+    }
+
+    function updateRobotSpritePosition() {
+      const sprite = document.getElementById('robot-sprite');
+      if (!sprite) return;
+
+      const leftPct = 3 + (robotState.x * 24);
+      const topPct = 3 + (robotState.y * 24);
+      const rotationDeg = robotState.dir * 90;
+
+      sprite.style.left = `${leftPct}%`;
+      sprite.style.top = `${topPct}%`;
+      sprite.style.transform = `rotate(${rotationDeg}deg)`;
+    }
 
     function addRobotCommand(symbol, name) {
-      if (robotCommands.length >= 6) {
-        speakText("¡Secuencia llena!");
-        return;
+      if (robotState.isRunning) return;
+      if (robotCmds.length < 8) {
+        robotCmds.push({ symbol, name });
+        updateRobotUI();
+        speakText(name);
       }
-      robotCommands.push(symbol);
-      updateRobotUI();
-      speakText(name);
     }
 
     function clearRobotCommands() {
-      robotCommands = [];
+      if (robotState.isRunning) return;
+      robotCmds = [];
       updateRobotUI();
-      speakText("Secuencia borrada");
+      speakText("Comandos borrados");
     }
 
     function updateRobotUI() {
       const container = document.getElementById('command-sequence');
-      if (robotCommands.length === 0) {
-        container.innerHTML = '<span class="text-slate-500 text-xs italic">Elige tus movimientos...</span>';
-      } else {
-        container.innerHTML = robotCommands.map(cmd => `<span class="bg-indigo-600 text-white font-bold p-2 rounded-lg text-base shrink-0">${cmd}</span>`).join('');
-      }
+      if (!container) return;
+      container.innerHTML = robotCmds.length 
+        ? robotCmds.map((c, idx) => `<span id="cmd-badge-${idx}" class="bg-indigo-600 text-white font-black px-2.5 py-1.5 rounded-xl text-lg shadow-sm border border-indigo-400 shrink-0">${c.symbol}</span>`).join('') 
+        : '<span class="text-slate-400 text-xs italic px-2">Toca las funciones abajo para programar a Robi...</span>';
+    }
+
+    const ROBOT_STEP_MS = 1600; // tiempo entre comandos, para que la voz y el movimiento no se encimen
+
+    function setRobotControlsEnabled(enabled) {
+      document.querySelectorAll('#tab-robot .grid.grid-cols-4 button, #tab-robot button[onclick="runRobotSequence()"]').forEach(btn => {
+        btn.disabled = !enabled;
+        btn.classList.toggle('opacity-40', !enabled);
+      });
     }
 
     function runRobotSequence() {
-      if (robotCommands.length === 0) {
-        speakText("Paola, primero elige instrucciones para el robot.");
+      if (!robotCmds.length) {
+        speakText("Agrega pasos al robot primero Paola");
         return;
       }
+      if (robotState.isRunning) return;
 
-      speakText("¡Iniciando rutina del robot de Paola!");
-      const avatar = document.getElementById('robot-avatar');
-      const statusText = document.getElementById('robot-status-text');
-      
-      let step = 0;
-      const interval = setInterval(() => {
-        if (step >= robotCommands.length) {
-          clearInterval(interval);
-          avatar.className = "text-7xl transition-all duration-300 transform";
-          avatar.innerText = "🤖";
-          statusText.innerText = "¡Misión Cumplida!";
-          stars += 1;
-          document.getElementById('star-count').innerText = stars;
-          speakText("¡Bravo Paola! El robot completó todos tus comandos.");
+      robotState.isRunning = true;
+      setRobotControlsEnabled(false);
+      speakText("¡Iniciando programa de Robi!");
+
+      let stepIdx = 0;
+
+      const stepInterval = setInterval(() => {
+        if (stepIdx > 0) {
+          const prevBadge = document.getElementById(`cmd-badge-${stepIdx - 1}`);
+          if (prevBadge) prevBadge.className = "bg-indigo-600 text-white font-black px-2.5 py-1.5 rounded-xl text-lg shadow-sm border border-indigo-400 shrink-0 opacity-60";
+        }
+
+        if (stepIdx >= robotCmds.length) {
+          clearInterval(stepInterval);
+          robotState.isRunning = false;
+          setRobotControlsEnabled(true);
+          addStar();
+          speakText("¡Misión cumplida Paola!");
           return;
         }
 
-        const cmd = robotCommands[step];
-        statusText.innerText = `Ejecutando paso ${step + 1}...`;
+        const currBadge = document.getElementById(`cmd-badge-${stepIdx}`);
+        if (currBadge) currBadge.className = "bg-yellow-400 text-slate-900 font-black px-3 py-1.5 rounded-xl text-xl shadow-lg border-2 border-white shrink-0 scale-110";
 
-        if (cmd === '⬆️') {
-          avatar.className = "text-7xl transition-all duration-300 transform -translate-y-8";
-          avatar.innerText = "🤖";
-        } else if (cmd === '⬇️') {
-          avatar.className = "text-7xl transition-all duration-300 transform translate-y-8";
-          avatar.innerText = "🤖";
-        } else if (cmd === '🌀') {
-          avatar.className = "text-7xl transition-all duration-300 transform rotate-180";
-          avatar.innerText = "🤖";
-        } else if (cmd === '🤸') {
-          avatar.className = "text-7xl transition-all duration-300 transform scale-125 -translate-y-4";
-          avatar.innerText = "🤸🤖";
-        } else if (cmd === '💖') {
-          avatar.className = "text-7xl transition-all duration-300 transform scale-110";
-          avatar.innerText = "😍🤖";
-        } else if (cmd === '⚡') {
-          avatar.className = "text-7xl transition-all duration-100 transform robot-super";
-          avatar.innerText = "⚡🤖⚡";
-        }
+        const cmd = robotCmds[stepIdx].symbol;
+        executeSingleCommand(cmd);
 
-        step++;
-      }, 750);
+        stepIdx++;
+      }, ROBOT_STEP_MS);
     }
 
-    // Inicialización al cargar la ventana
-    window.onload = function() {
-      switchTab('tab-art');
-      window.addEventListener('resize', resizeCanvas);
+    function executeSingleCommand(cmd) {
+      const expression = document.getElementById('robot-face-expression');
+
+      if (cmd === '⬆️') {
+        if (robotState.dir === 0 && robotState.y > 0) robotState.y--;
+        else if (robotState.dir === 1 && robotState.x < 3) robotState.x++;
+        else if (robotState.dir === 2 && robotState.y < 3) robotState.y++;
+        else if (robotState.dir === 3 && robotState.x > 0) robotState.x--;
+        if (expression) expression.innerText = '😃';
+      } else if (cmd === '↩️') {
+        robotState.dir = (robotState.dir + 3) % 4;
+        if (expression) expression.innerText = '😉';
+      } else if (cmd === '↪️') {
+        robotState.dir = (robotState.dir + 1) % 4;
+        if (expression) expression.innerText = '😉';
+      } else if (cmd === '🤸') {
+        if (expression) expression.innerText = '🤩';
+        speakText("¡Salto alto!");
+        const sprite = document.getElementById('robot-sprite');
+        if (sprite) {
+          sprite.classList.add('-translate-y-8', 'scale-125');
+          setTimeout(() => sprite.classList.remove('-translate-y-8', 'scale-125'), 400);
+        }
+      } else if (cmd === '💃') {
+        if (expression) expression.innerText = '💃';
+        speakText("¡A bailar!");
+        const sprite = document.getElementById('robot-sprite');
+        if (sprite) {
+          sprite.classList.add('rotate-12', 'scale-110');
+          setTimeout(() => sprite.classList.remove('rotate-12', 'scale-110'), 400);
+        }
+      } else if (cmd === '🎨') {
+        robotState.colorIdx = (robotState.colorIdx + 1) % robotColors.length;
+        const newColor = robotColors[robotState.colorIdx];
+        document.getElementById('robot-body-head').setAttribute('fill', newColor);
+        document.getElementById('robot-body-chest').setAttribute('fill', newColor);
+        document.getElementById('robot-arm-l').setAttribute('stroke', newColor);
+        document.getElementById('robot-arm-r').setAttribute('stroke', newColor);
+        speakText("¡Nuevo color!");
+      } else if (cmd === '💖') {
+        if (expression) expression.innerText = '😍';
+        speakText("¡Te quiero mucho Paola!");
+      }
+
+      updateRobotSpritePosition();
+
+      const starIndex = gridStars.findIndex(s => s.x === robotState.x && s.y === robotState.y);
+      if (starIndex !== -1) {
+        gridStars.splice(starIndex, 1);
+        renderGridStars();
+        addStar();
+        speakText("¡Conseguiste una estrella!");
+      }
+    }
+
+    // PESTAÑA PUZZLES Y SUBMODOS
+    function switchPuzzleSubmode(mode) {
+      document.getElementById('puzzle-mode-memory').classList.add('hidden');
+      document.getElementById('puzzle-mode-shadow').classList.add('hidden');
+
+      document.getElementById('btn-sub-memory').className = "px-3 py-1.5 rounded-xl text-xs font-black bg-slate-100 text-slate-600";
+      document.getElementById('btn-sub-shadow').className = "px-3 py-1.5 rounded-xl text-xs font-black bg-slate-100 text-slate-600";
+
+      if (mode === 'memory') {
+        document.getElementById('puzzle-mode-memory').classList.remove('hidden');
+        document.getElementById('btn-sub-memory').className = "px-3 py-1.5 rounded-xl text-xs font-black bg-indigo-600 text-white shadow-sm";
+        initMemoryGame();
+      } else if (mode === 'shadow') {
+        document.getElementById('puzzle-mode-shadow').classList.remove('hidden');
+        document.getElementById('btn-sub-shadow').className = "px-3 py-1.5 rounded-xl text-xs font-black bg-purple-600 text-white shadow-sm";
+        loadPuzzle();
+      }
+    }
+
+    // JUEGO DE MEMORIA CON NIVELES
+    const memoryIconsPool = ['💖', '🦄', '🦕', '👑', '🤸‍♀️', '⚽', '🦁', '🦋', '🐬', '🐨', '🏆', '🦒'];
+    const memoryLevels = {
+      facil:   { pairs: 3, cols: 3, cardHeight: 'h-24' },
+      medio:   { pairs: 6, cols: 3, cardHeight: 'h-20' },
+      dificil: { pairs: 9, cols: 4, cardHeight: 'h-16' }
     };
+    let currentMemoryLevel = 'facil';
+    let memoryCards = [];
+    let flippedCards = [];
+    let matchedPairs = 0;
+
+    function syncMemoryLevelButtons() {
+      ['facil', 'medio', 'dificil'].forEach(l => {
+        const btn = document.getElementById(`btn-lvl-${l}`);
+        if (btn) btn.className = l === currentMemoryLevel
+          ? "px-3 py-1 rounded-xl text-xs font-black bg-indigo-500 text-white shadow-sm"
+          : "px-3 py-1 rounded-xl text-xs font-black bg-slate-100 text-slate-600";
+      });
+    }
+
+    function setMemoryLevel(level) {
+      currentMemoryLevel = level;
+      progressData.memoryLevel = level;
+      saveProgress();
+      syncMemoryLevelButtons();
+      initMemoryGame();
+    }
+
+    function initMemoryGame() {
+      const grid = document.getElementById('memory-grid');
+      if (!grid) return;
+      grid.innerHTML = '';
+      syncMemoryLevelButtons();
+
+      const level = memoryLevels[currentMemoryLevel];
+      const icons = memoryIconsPool.slice(0, level.pairs);
+      let deck = [...icons, ...icons].sort(() => 0.5 - Math.random());
+      memoryCards = deck;
+      flippedCards = [];
+      matchedPairs = 0;
+
+      grid.className = `grid grid-cols-${level.cols} gap-2.5 bg-indigo-100 p-3 rounded-3xl border-4 border-indigo-200 w-full max-w-sm my-auto`;
+
+      speakText("Encuentra las parejas de cartas Paola");
+
+      deck.forEach((icon, idx) => {
+        const cardContainer = document.createElement('div');
+        cardContainer.className = `card-flip ${level.cardHeight} w-full cursor-pointer`;
+        cardContainer.innerHTML = `
+          <div id="card-inner-${idx}" class="card-inner w-full h-full relative rounded-2xl shadow-md">
+            <div class="card-front absolute w-full h-full bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl border-2 border-white flex items-center justify-center text-white font-black text-2xl">❓</div>
+            <div class="card-back absolute w-full h-full bg-white rounded-2xl border-2 border-indigo-300 flex items-center justify-center text-4xl">${icon}</div>
+          </div>
+        `;
+        cardContainer.onclick = () => handleMemoryFlip(idx);
+        grid.appendChild(cardContainer);
+      });
+    }
+
+    function handleMemoryFlip(idx) {
+      if (flippedCards.length >= 2 || flippedCards.includes(idx)) return;
+
+      const inner = document.getElementById(`card-inner-${idx}`);
+      if (inner) inner.classList.add('flipped');
+      flippedCards.push(idx);
+
+      if (flippedCards.length === 2) {
+        const [idx1, idx2] = flippedCards;
+        if (memoryCards[idx1] === memoryCards[idx2]) {
+          matchedPairs++;
+          speakText(memoryCards[idx1]);
+          flippedCards = [];
+          if (matchedPairs === memoryLevels[currentMemoryLevel].pairs) {
+            addStar();
+            const order = ['facil', 'medio', 'dificil'];
+            const nextIdx = order.indexOf(currentMemoryLevel) + 1;
+            if (nextIdx < order.length) {
+              speakText("¡Increíble Paola! Vamos a un nivel más difícil.");
+              setTimeout(() => setMemoryLevel(order[nextIdx]), 2200);
+            } else {
+              speakText("¡Increíble Paola! Encontraste todas las parejas de memoria.");
+              setTimeout(initMemoryGame, 2200);
+            }
+          }
+        } else {
+          setTimeout(() => {
+            const card1 = document.getElementById(`card-inner-${idx1}`);
+            const card2 = document.getElementById(`card-inner-${idx2}`);
+            if (card1) card1.classList.remove('flipped');
+            if (card2) card2.classList.remove('flipped');
+            flippedCards = [];
+          }, 1000);
+        }
+      }
+    }
+
+    // 3. ADIVINA LA SOMBRA
+    const puzzleItems = [
+      { name: 'Dinosaurio', icon: '🦕' },
+      { name: 'Princesa', icon: '👸' },
+      { name: 'Balón de fútbol', icon: '⚽' },
+      { name: 'Gimnasta', icon: '🤸‍♀️' },
+      { name: 'León', icon: '🦁' },
+      { name: 'Unicornio', icon: '🦄' }
+    ];
+    let currentPuzzle = null;
+
+    function loadPuzzle() {
+      currentPuzzle = puzzleItems[Math.floor(Math.random() * puzzleItems.length)];
+      const target = document.getElementById('puzzle-target');
+      target.innerText = currentPuzzle.icon;
+      target.classList.add('grayscale', 'brightness-0');
+      readPuzzlePrompt();
+
+      const container = document.getElementById('puzzle-options');
+      if (!container) return;
+      container.innerHTML = '';
+
+      let shuffled = [...puzzleItems].sort(() => 0.5 - Math.random()).slice(0, 4);
+      if (!shuffled.some(item => item.name === currentPuzzle.name)) {
+        shuffled[0] = currentPuzzle;
+        shuffled.sort(() => 0.5 - Math.random());
+      }
+
+      shuffled.forEach(item => {
+        const btn = document.createElement('button');
+        btn.className = 'bg-white p-3 rounded-2xl shadow-md text-5xl border-2 border-purple-200 active:scale-90 flex justify-center items-center h-20';
+        btn.innerText = item.icon;
+        btn.onclick = () => checkPuzzle(item);
+        container.appendChild(btn);
+      });
+    }
+
+    function readPuzzlePrompt() {
+      if (currentPuzzle) speakText(`Paola, ¿dónde está el o la ${currentPuzzle.name}?`);
+    }
+
+    function checkPuzzle(selected) {
+      if (selected.name === currentPuzzle.name) {
+        document.getElementById('puzzle-target').classList.remove('grayscale', 'brightness-0');
+        addStar();
+        speakText(`¡Sí Paola! Es el ${currentPuzzle.name}. ¡Ganaste una estrella!`);
+        setTimeout(loadPuzzle, 2000);
+      } else {
+        speakText("Casi, intenta con otra opción Paola");
+      }
+    }
+
+    // MATEMÁTICAS: SUMAS Y RESTAS
+    let mathAnswer = 0;
+    let mathPromptText = "";
+    let currentMathMode = 'sum';
+
+    function setMathMode(mode) {
+      currentMathMode = mode;
+      document.getElementById('btn-mode-sum').className = mode === 'sum'
+        ? "px-4 py-1.5 rounded-xl text-xs font-black bg-emerald-500 text-white shadow-sm"
+        : "px-4 py-1.5 rounded-xl text-xs font-black bg-slate-100 text-slate-600";
+      document.getElementById('btn-mode-sub').className = mode === 'sub'
+        ? "px-4 py-1.5 rounded-xl text-xs font-black bg-emerald-500 text-white shadow-sm"
+        : "px-4 py-1.5 rounded-xl text-xs font-black bg-slate-100 text-slate-600";
+      document.getElementById('math-mode-label').innerText = mode === 'sum' ? 'Cuenta con Paola: Sumas' : 'Cuenta con Paola: Restas';
+      loadMathQuestion();
+    }
+
+    function loadMathQuestion() {
+      const items = ['🦕', '⚽', '👑', '🦁', '🦄'];
+      const currentItem = items[Math.floor(Math.random() * items.length)];
+      let visualHtml = '';
+      const tier = (progressData.mathTier[currentMathMode]) || 1;
+
+      if (currentMathMode === 'sum') {
+        const r = { 1: [1, 3, 1, 2], 2: [2, 5, 1, 4], 3: [3, 7, 2, 6] }[tier];
+        const num1 = Math.floor(Math.random() * (r[1] - r[0] + 1)) + r[0];
+        const num2 = Math.floor(Math.random() * (r[3] - r[2] + 1)) + r[2];
+        mathAnswer = num1 + num2;
+
+        for (let i = 0; i < num1; i++) visualHtml += currentItem;
+        visualHtml += ' <span class="text-emerald-500 font-black mx-1">+</span> ';
+        for (let i = 0; i < num2; i++) visualHtml += currentItem;
+
+        mathPromptText = `Si tienes ${num1} y te regalan ${num2}, ¿cuántos tienes en total Paola?`;
+      } else {
+        const r = { 1: [3, 5], 2: [5, 8], 3: [7, 10] }[tier];
+        const num1 = Math.floor(Math.random() * (r[1] - r[0] + 1)) + r[0];
+        const num2 = Math.floor(Math.random() * (num1 - 1)) + 1;
+        mathAnswer = num1 - num2;
+
+        for (let i = 0; i < num1; i++) {
+          visualHtml += i < num2
+            ? `<span class="opacity-30 line-through">${currentItem}</span>`
+            : currentItem;
+        }
+        visualHtml += ` <span class="text-emerald-500 font-black mx-1">− ${num2}</span>`;
+
+        mathPromptText = `Si tienes ${num1} y regalas ${num2}, ¿cuántos te quedan Paola?`;
+      }
+
+      document.getElementById('math-visual').innerHTML = visualHtml;
+      readMathQuestion();
+
+      const container = document.getElementById('math-options');
+      if (!container) return;
+      container.innerHTML = '';
+
+      const options = new Set([mathAnswer, mathAnswer + 1, Math.max(0, mathAnswer - 1)]);
+      while (options.size < 3) options.add(mathAnswer + options.size + 1);
+
+      [...options].sort(() => 0.5 - Math.random()).forEach(num => {
+        const btn = document.createElement('button');
+        btn.className = 'bg-white text-emerald-700 font-black p-4 rounded-2xl text-3xl shadow-md border-2 border-emerald-200 active:scale-90 h-20 flex justify-center items-center';
+        btn.innerText = num;
+        btn.onclick = () => checkMath(num);
+        container.appendChild(btn);
+      });
+    }
+
+    function readMathQuestion() {
+      speakText(mathPromptText);
+    }
+
+    function checkMath(selected) {
+      if (selected === mathAnswer) {
+        addStar();
+        progressData.mathStreak[currentMathMode] = (progressData.mathStreak[currentMathMode] || 0) + 1;
+        if (progressData.mathStreak[currentMathMode] >= 3 && progressData.mathTier[currentMathMode] < 3) {
+          progressData.mathTier[currentMathMode]++;
+          progressData.mathStreak[currentMathMode] = 0;
+          speakText(`¡Perfecto Paola! ${mathAnswer} es la respuesta correcta. ¡Vamos a un reto más grande!`);
+        } else {
+          speakText(`¡Perfecto Paola! ${mathAnswer} es la respuesta correcta.`);
+        }
+        saveProgress();
+        setTimeout(loadMathQuestion, 2000);
+      } else {
+        progressData.mathStreak[currentMathMode] = 0;
+        speakText("Cuenta despacio los dibujitos Paola");
+      }
+    }
+
+    // PALABRAS Y LENGUAJE
+    const wordDictionary = [
+      { word: 'PAOLA', icon: '👑', hint: '¡Tu nombre princesa!' },
+      { word: 'PRINCESA', icon: '👸', hint: 'Princesa hermosa' },
+      { word: 'DINOSAURIO', icon: '🦕', hint: 'Amigo gigante' },
+      { word: 'GIMNASIA', icon: '🤸‍♀️', hint: 'Saltos y piruetas' },
+      { word: 'UNICORNIO', icon: '🦄', hint: 'Caballo mágico' },
+      { word: 'FUTBOL', icon: '⚽', hint: 'Golazo de victoria' },
+      { word: 'LEON', icon: '🦁', hint: 'Rey de la selva' },
+      { word: 'MAMA', icon: '💖', hint: 'Mamá te ama mucho' },
+      { word: 'PAPA', icon: '⭐', hint: 'Papá te ama mucho' }
+    ];
+
+    let currentWordObj = null;
+    let assembledLetters = [];
+    const wordDictionarySorted = [...wordDictionary].sort((a, b) => a.word.length - b.word.length);
+
+    function switchReadSubmode(mode) {
+      document.getElementById('read-mode-words').classList.add('hidden');
+      document.getElementById('read-mode-alphabet').classList.add('hidden');
+
+      document.getElementById('btn-sub-words').className = "px-3 py-1.5 rounded-xl text-xs font-black bg-slate-100 text-slate-600";
+      document.getElementById('btn-sub-alphabet').className = "px-3 py-1.5 rounded-xl text-xs font-black bg-slate-100 text-slate-600";
+
+      if (mode === 'words') {
+        document.getElementById('read-mode-words').classList.remove('hidden');
+        document.getElementById('btn-sub-words').className = "px-3 py-1.5 rounded-xl text-xs font-black bg-pink-500 text-white shadow-sm";
+        initWordGame();
+      } else if (mode === 'alphabet') {
+        document.getElementById('read-mode-alphabet').classList.remove('hidden');
+        document.getElementById('btn-sub-alphabet').className = "px-3 py-1.5 rounded-xl text-xs font-black bg-pink-500 text-white shadow-sm";
+        initAlphabetCarousel();
+        resizeLetterCanvas();
+      }
+    }
+
+    function initWordGame() {
+      const idx = (progressData.wordIndex || 0) % wordDictionarySorted.length;
+      currentWordObj = wordDictionarySorted[idx];
+      assembledLetters = [];
+
+      document.getElementById('word-target-icon').innerText = currentWordObj.icon;
+      document.getElementById('word-target-hint').innerText = currentWordObj.word;
+
+      speakWordTarget();
+      renderWordSlots();
+      renderWordBubbles();
+    }
+
+    function speakWordTarget() {
+      if (currentWordObj) speakText(`Paola, armemos la palabra ${currentWordObj.word}. ${currentWordObj.hint}`);
+    }
+
+    function speakPartialWord() {
+      if (assembledLetters.length === 0) {
+        speakText("Toca las letras para empezar a armar la palabra");
+        return;
+      }
+      speakText(assembledLetters.join(''));
+    }
+
+    function renderWordSlots() {
+      const container = document.getElementById('word-slots-container');
+      if (!container || !currentWordObj) return;
+      container.innerHTML = '';
+
+      const targetLetters = currentWordObj.word.split('');
+      targetLetters.forEach((letter, idx) => {
+        const slot = document.createElement('div');
+        const isFilled = idx < assembledLetters.length;
+        slot.className = `w-10 h-12 rounded-2xl border-4 ${isFilled ? 'border-pink-500 bg-pink-500 text-white font-black scale-105' : 'border-dashed border-pink-300 bg-white text-transparent'} flex items-center justify-center text-2xl shadow-sm transition-all`;
+        slot.innerText = isFilled ? assembledLetters[idx] : '_';
+        container.appendChild(slot);
+      });
+    }
+
+    function renderWordBubbles() {
+      const container = document.getElementById('word-bubbles-container');
+      if (!container || !currentWordObj) return;
+      container.innerHTML = '';
+
+      const targetLetters = currentWordObj.word.split('');
+      let extraLetters = ['A', 'E', 'I', 'O', 'U', 'P', 'L', 'S', 'R', 'M'];
+      let options = [...targetLetters, ...extraLetters.slice(0, 3)].sort(() => 0.5 - Math.random());
+
+      options.forEach(letra => {
+        const btn = document.createElement('button');
+        btn.className = "w-11 h-11 bg-gradient-to-br from-pink-400 to-purple-500 text-white font-black rounded-2xl text-xl shadow-md border-2 border-white active:scale-90 flex items-center justify-center";
+        btn.innerText = letra;
+        btn.onclick = () => handleWordBubbleClick(letra);
+        container.appendChild(btn);
+      });
+    }
+
+    function handleWordBubbleClick(letra) {
+      speakText(letra);
+      const targetLetters = currentWordObj.word.split('');
+      const expectedNext = targetLetters[assembledLetters.length];
+
+      if (letra === expectedNext) {
+        assembledLetters.push(letra);
+        renderWordSlots();
+
+        if (assembledLetters.length === targetLetters.length) {
+          addStar();
+          speakText(`¡Súper Paola! Escribiste la palabra completa: ${currentWordObj.word}`);
+          progressData.wordIndex = ((progressData.wordIndex || 0) + 1) % wordDictionarySorted.length;
+          saveProgress();
+          setTimeout(initWordGame, 2500);
+        }
+      } else {
+        speakText(`Busca la letra ${expectedNext}`);
+      }
+    }
+
+    function nextWordChallenge() {
+      initWordGame();
+    }
+
+    // ABECEDARIO Y TRAZO
+    const fullAlphabet = [
+      { l: 'A', w: 'Amor', i: '💖' }, { l: 'B', w: 'Balón', i: '⚽' }, { l: 'C', w: 'Corona', i: '👑' },
+      { l: 'D', w: 'Dinosaurio', i: '🦕' }, { l: 'E', w: 'Estrella', i: '⭐' }, { l: 'F', w: 'Fútbol', i: '⚽' },
+      { l: 'G', w: 'Gimnasia', i: '🤸‍♀️' }, { l: 'H', w: 'Helado', i: '🍦' }, { l: 'I', w: 'Isla', i: '🏝️' },
+      { l: 'J', w: 'Jirafa', i: '🦒' }, { l: 'K', w: 'Koala', i: '🐨' }, { l: 'L', w: 'León', i: '🦁' },
+      { l: 'M', w: 'Mamá', i: '💖' }, { l: 'N', w: 'Nube', i: '☁️' }, { l: 'Ñ', w: 'Ñandú', i: '🐦' },
+      { l: 'O', w: 'Oso', i: '🐻' }, { l: 'P', w: 'Princesa y Paola', i: '👸' }, { l: 'Q', w: 'Queso', i: '🧀' },
+      { l: 'R', w: 'Robot', i: '🤖' }, { l: 'S', w: 'Sol', i: '☀️' }, { l: 'T', w: 'Tigre', i: '🐯' },
+      { l: 'U', w: 'Unicornio', i: '🦄' }, { l: 'V', w: 'Viento', i: '🌬️' }, { l: 'W', w: 'Waffle', i: '🧇' },
+      { l: 'X', w: 'Xilófono', i: '🎼' }, { l: 'Y', w: 'Yate', i: '🛥️' }, { l: 'Z', w: 'Zorro', i: '🦊' }
+    ];
+
+    function initAlphabetCarousel() {
+      const carousel = document.getElementById('alphabet-carousel');
+      if (!carousel) return;
+      carousel.innerHTML = '';
+
+      fullAlphabet.forEach(item => {
+        const btn = document.createElement('button');
+        btn.className = "bg-white border-2 border-pink-300 text-pink-600 font-black px-3.5 py-1 rounded-xl text-lg shadow-sm shrink-0 active:scale-95";
+        btn.innerText = item.l;
+        btn.onclick = () => selectLetter(item.l, item.i, item.w);
+        carousel.appendChild(btn);
+      });
+    }
+
+    let letterCanvas, letterCtx;
+    let isDrawingLetter = false;
+
+    function initLetterCanvas() {
+      letterCanvas = document.getElementById('letterCanvas');
+      if (!letterCanvas) return;
+      letterCtx = letterCanvas.getContext('2d');
+
+      resizeLetterCanvas();
+
+      letterCanvas.addEventListener('pointerdown', (e) => {
+        letterCanvas.setPointerCapture(e.pointerId);
+        isDrawingLetter = true;
+        const rect = letterCanvas.getBoundingClientRect();
+        letterCtx.beginPath();
+        letterCtx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+        letterCtx.strokeStyle = '#ec4899';
+        letterCtx.lineWidth = 14;
+        letterCtx.lineCap = 'round';
+        letterCtx.lineJoin = 'round';
+      });
+
+      letterCanvas.addEventListener('pointermove', (e) => {
+        if (!isDrawingLetter) return;
+        const rect = letterCanvas.getBoundingClientRect();
+        letterCtx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+        letterCtx.stroke();
+      });
+
+      const stopLetter = () => { isDrawingLetter = false; };
+      letterCanvas.addEventListener('pointerup', stopLetter);
+      letterCanvas.addEventListener('pointercancel', stopLetter);
+    }
+
+    function resizeLetterCanvas() {
+      if (!letterCanvas || !letterCanvas.parentElement) return;
+      const rect = letterCanvas.parentElement.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        letterCanvas.width = rect.width;
+        letterCanvas.height = rect.height;
+      }
+    }
+
+    function selectLetter(letra, icono, nombre) {
+      document.getElementById('letter-title').innerText = `${letra} de ${nombre}`;
+      document.getElementById('letter-trace-bg').innerText = letra;
+      if (letterCtx && letterCanvas) {
+        letterCtx.clearRect(0, 0, letterCanvas.width, letterCanvas.height);
+      }
+      readLetterSound();
+    }
+
+    function readLetterSound() {
+      const titleText = document.getElementById('letter-title').innerText;
+      speakText(`Letra ${titleText}`);
+    }
+
+    // CUENTOS CORTOS HABLADOS
+    const stories = [
+      {
+        title: 'El Dinosaurio Saltarín', icon: '🦕', color: 'from-green-400 to-emerald-500',
+        paragraphs: [
+          'Había una vez un pequeño dinosaurio llamado Rex que vivía en un valle lleno de flores.',
+          'A Rex le encantaba saltar muy alto entre las rocas, como si hiciera trucos de gimnasia.',
+          'Un día, sus amigos del bosque lo invitaron a una competencia de saltos.',
+          'Rex practicó todos los días y con esfuerzo logró el salto más alto de todos. Estaba muy feliz y orgulloso.'
+        ],
+        question: { text: '¿Qué le encantaba hacer a Rex?', options: [
+          { label: 'Saltar muy alto', correct: true },
+          { label: 'Dormir todo el día', correct: false }
+        ]}
+      },
+      {
+        title: 'El Gol de la Selva', icon: '⚽', color: 'from-sky-400 to-blue-500',
+        paragraphs: [
+          'En la selva, los animales organizaron un partido de fútbol muy especial.',
+          'El león era el portero, el mono jugaba de delantero y la jirafa corría por la banda.',
+          'Cuando el balón voló muy alto, todos pensaron que se perdería entre los árboles.',
+          'Pero una pequeña ardilla saltó de rama en rama y anotó el gol de la victoria. ¡Todos celebraron juntos!'
+        ],
+        question: { text: '¿Quién anotó el gol?', options: [
+          { label: 'La ardilla', correct: true },
+          { label: 'El elefante', correct: false }
+        ]}
+      },
+      {
+        title: 'La Princesa Valiente', icon: '👸', color: 'from-purple-400 to-pink-500',
+        paragraphs: [
+          'Había una vez una princesa llamada Luna que no tenía miedo a nada.',
+          'Un día escuchó que un unicornio se había quedado atrapado en una cueva oscura.',
+          'Luna tomó su linterna y caminó con valentía hasta encontrarlo.',
+          'Juntos encontraron el camino de regreso, y desde entonces fueron los mejores amigos del reino.'
+        ],
+        question: { text: '¿A quién ayudó la princesa Luna?', options: [
+          { label: 'A un unicornio', correct: true },
+          { label: 'A un dragón', correct: false }
+        ]}
+      },
+      {
+        title: 'Los Amigos del Zoológico', icon: '🦁', color: 'from-amber-400 to-orange-500',
+        paragraphs: [
+          'En un zoológico muy alegre vivían un león, un oso y un koala que eran grandes amigos.',
+          'Cada mañana se saludaban con un fuerte rugido, un abrazo y una siesta juntos.',
+          'Un día llegó una tormenta y todos se asustaron un poco.',
+          'Pero se abrazaron fuerte y esperaron juntos hasta que salió el sol otra vez. La amistad los hizo sentir seguros.'
+        ],
+        question: { text: '¿Qué hicieron los amigos durante la tormenta?', options: [
+          { label: 'Se abrazaron juntos', correct: true },
+          { label: 'Se escondieron solos', correct: false }
+        ]}
+      }
+    ];
+
+    let currentStoryIdx = null;
+    let currentParagraphIdx = 0;
+
+    function renderStoryPicker() {
+      const picker = document.getElementById('story-picker');
+      const reader = document.getElementById('story-reader');
+      if (!picker || !reader) return;
+      picker.classList.remove('hidden');
+      reader.classList.add('hidden');
+      reader.classList.remove('flex');
+      picker.innerHTML = '';
+
+      stories.forEach((s, idx) => {
+        const card = document.createElement('button');
+        card.className = `bg-gradient-to-br ${s.color} rounded-3xl p-4 text-white shadow-md flex flex-col items-center justify-center space-y-1.5 active:scale-95 aspect-square`;
+        card.innerHTML = `<span class="text-4xl">${s.icon}</span><span class="font-black text-xs text-center leading-tight">${s.title}</span>`;
+        card.onclick = () => openStory(idx);
+        picker.appendChild(card);
+      });
+    }
+
+    function openStory(idx) {
+      currentStoryIdx = idx;
+      currentParagraphIdx = 0;
+      document.getElementById('story-picker').classList.add('hidden');
+      document.getElementById('story-reader').classList.remove('hidden');
+      document.getElementById('story-reader').classList.add('flex');
+      document.getElementById('story-question-box').classList.add('hidden');
+      document.getElementById('btn-story-next').classList.remove('hidden');
+      showStoryParagraph();
+    }
+
+    function closeStory() {
+      renderStoryPicker();
+    }
+
+    function showStoryParagraph() {
+      const story = stories[currentStoryIdx];
+      document.getElementById('story-icon').innerText = story.icon;
+      document.getElementById('story-text').innerText = story.paragraphs[currentParagraphIdx];
+      speakStoryParagraph();
+
+      const dots = document.getElementById('story-progress-dots');
+      dots.innerHTML = '';
+      story.paragraphs.forEach((_, i) => {
+        const dot = document.createElement('span');
+        dot.className = `w-2 h-2 rounded-full ${i === currentParagraphIdx ? 'bg-amber-500' : 'bg-amber-200'}`;
+        dots.appendChild(dot);
+      });
+
+      const isLast = currentParagraphIdx === story.paragraphs.length - 1;
+      document.getElementById('btn-story-next').innerText = isLast ? '¿Qué aprendiste? 🎉' : 'Siguiente ➡️';
+    }
+
+    function speakStoryParagraph() {
+      const story = stories[currentStoryIdx];
+      speakText(story.paragraphs[currentParagraphIdx]);
+    }
+
+    function nextStoryStep() {
+      const story = stories[currentStoryIdx];
+      if (currentParagraphIdx < story.paragraphs.length - 1) {
+        currentParagraphIdx++;
+        showStoryParagraph();
+      } else {
+        showStoryQuestion();
+      }
+    }
+
+    function showStoryQuestion() {
+      const story = stories[currentStoryIdx];
+      document.getElementById('btn-story-next').classList.add('hidden');
+      document.getElementById('story-question-box').classList.remove('hidden');
+      document.getElementById('story-question-text').innerText = story.question.text;
+      speakText(story.question.text);
+
+      const optContainer = document.getElementById('story-question-options');
+      optContainer.innerHTML = '';
+      [...story.question.options].sort(() => 0.5 - Math.random()).forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = "bg-white border-2 border-amber-300 text-amber-800 font-bold text-xs p-2.5 rounded-xl active:scale-95";
+        btn.innerText = opt.label;
+        btn.onclick = () => checkStoryAnswer(opt, btn);
+        optContainer.appendChild(btn);
+      });
+    }
+
+    function checkStoryAnswer(opt, btnEl) {
+      if (opt.correct) {
+        addStar();
+        speakText('¡Muy bien Paola! Entendiste el cuento.');
+        btnEl.className = "bg-emerald-100 border-2 border-emerald-400 text-emerald-800 font-bold text-xs p-2.5 rounded-xl";
+        setTimeout(closeStory, 2000);
+      } else {
+        speakText('Casi, piensa de nuevo en el cuento.');
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadProgress();
+      renderStampBar();
+      initPaintCanvas();
+      initLetterCanvas();
+      switchTab('tab-art');
+
+      window.addEventListener('resize', () => {
+        resizePaintCanvas();
+        resizeLetterCanvas();
+      });
+
+      if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+        navigator.serviceWorker.register('sw.js').catch(() => {});
+      }
+    });
   </script>
 </body>
 </html>
